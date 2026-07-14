@@ -1,0 +1,39 @@
+# Environment
+.env
+.env.*
+
+# Node
+node_modules/
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# Cursor
+.cursor/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# Temporary
+tmp/
+temp/
+
+# Coverage
+coverage/
+
+# Binaries
+bin/
+obj/
