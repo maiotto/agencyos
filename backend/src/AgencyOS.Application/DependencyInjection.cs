@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IAvailabilityEngineService, AvailabilityEngineService>();
         services.AddScoped<IAllocationConflictDetectionService, AllocationConflictDetectionService>();
         services.AddScoped<IDeliveryStrategyBuilderService, DeliveryStrategyBuilderService>();
+        services.AddScoped<IDeliveryStrategyEvaluatorService, DeliveryStrategyEvaluatorService>();
         services.AddValidatorsFromAssemblyContaining<CreateMissionRequestValidator>();
 
         return services;
