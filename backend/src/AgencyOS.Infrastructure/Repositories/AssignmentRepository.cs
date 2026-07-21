@@ -107,4 +107,26 @@ public class AssignmentRepository : IAssignmentRepository
             ? query.OrderByDescending(a => a.PlannedStartDate).ThenBy(a => a.Id)
             : query.OrderBy(a => a.PlannedStartDate).ThenBy(a => a.Id);
     }
+
+    public async Task<IReadOnlyList<Assignment>> GetForCapacityCalculationAsync(
+        DateOnly periodStartDate,
+        DateOnly periodEndDate,
+        Guid? executionResourceId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Assignments
+            .AsNoTracking()
+            .Where(a =>
+                a.PlannedStartDate <= periodEndDate
+                && a.PlannedEndDate >= periodStartDate
+                && !EF.Functions.ILike(a.Status, AssignmentStatus.Cancelled)
+                && !EF.Functions.ILike(a.Status, AssignmentStatus.Completed));
+
+        if (executionResourceId.HasValue)
+        {
+            query = query.Where(a => a.ExecutionResourceId == executionResourceId.Value);
+        }
+
+        return await query.ToListAsync(cancellationToken);
+    }
 }

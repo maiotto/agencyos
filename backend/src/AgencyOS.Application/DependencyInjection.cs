@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IExecutionResourceService, ExecutionResourceService>();
         services.AddScoped<IAssignmentService, AssignmentService>();
+        services.AddScoped<ICapacityCalculatorService, CapacityCalculatorService>();
         services.AddValidatorsFromAssemblyContaining<CreateMissionRequestValidator>();
 
         return services;

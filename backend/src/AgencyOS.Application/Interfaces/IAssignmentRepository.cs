@@ -14,4 +14,10 @@ public interface IAssignmentRepository
     Task<Assignment> AddAsync(Assignment assignment, CancellationToken cancellationToken = default);
 
     Task<Assignment> UpdateAsync(Assignment assignment, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<Assignment>> GetForCapacityCalculationAsync(
+        DateOnly periodStartDate,
+        DateOnly periodEndDate,
+        Guid? executionResourceId = null,
+        CancellationToken cancellationToken = default);
 }

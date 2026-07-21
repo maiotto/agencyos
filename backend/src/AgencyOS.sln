@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgencyOS.Infrastructure", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgencyOS.Shared", "AgencyOS.Shared\AgencyOS.Shared.csproj", "{656CC01D-9F73-44DE-A65D-297E22F17EEE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgencyOS.Application.Tests", "AgencyOS.Application.Tests\AgencyOS.Application.Tests.csproj", "{1E63D03A-78FC-4569-AF87-A72B7AFA2194}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{656CC01D-9F73-44DE-A65D-297E22F17EEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{656CC01D-9F73-44DE-A65D-297E22F17EEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{656CC01D-9F73-44DE-A65D-297E22F17EEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E63D03A-78FC-4569-AF87-A72B7AFA2194}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E63D03A-78FC-4569-AF87-A72B7AFA2194}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E63D03A-78FC-4569-AF87-A72B7AFA2194}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E63D03A-78FC-4569-AF87-A72B7AFA2194}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -488,3 +488,25 @@ DELETE {{AgencyOS.Api_HostAddress}}/assignments/{{assignmentId}}
 
 PATCH {{AgencyOS.Api_HostAddress}}/assignments/{{assignmentId}}/cancel
 Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/capacity?periodStartDate=2026-07-01&periodEndDate=2026-07-31
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/capacity/summary?periodStartDate=2026-07-01&periodEndDate=2026-07-31
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/capacity/{{executionResourceId}}?periodStartDate=2026-07-01&periodEndDate=2026-07-31
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/capacity?periodEndDate=2026-07-31
+Accept: application/json
+
+###
