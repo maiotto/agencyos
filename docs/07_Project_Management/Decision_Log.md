@@ -120,6 +120,38 @@ A consistent calculation chain is established for reuse by the Delivery Strategy
 
 ---
 
+## DEC-007-004
+
+**Title**
+
+Reuse of Calculation Services
+
+**Date**
+
+2026-07-21
+
+**Status**
+
+Accepted
+
+**Context**
+
+Analytical engines operate on shared operational data. Reimplementing formulas or reloading raw execution data in each engine would produce inconsistent metrics and duplicate maintenance effort.
+
+**Decision**
+
+Each analytical engine must invoke upstream calculation services rather than duplicating logic or independently recomputing shared metrics.
+
+Capacity, Workload, Availability and Allocation Conflict Detection share results through service composition, not repeated calculation code.
+
+**Consequences**
+
+Operational metrics have a single source of truth across all analytical engines and downstream Decision Engine stages.
+
+Regression risk is reduced because calculation changes propagate through shared service contracts.
+
+---
+
 # Sprint 8 Decisions
 
 ## DEC-008-001
@@ -366,5 +398,115 @@ Project documentation remains aligned with implemented architecture.
 Backend Agents focus on implementation. Documentation consolidation is a separate governed step.
 
 See ADR-008 and prompts/system/06_Documentation_Update_Guide.md.
+
+---
+
+## DEC-008-008
+
+**Title**
+
+AgencyOS AI Factory as a Parallel Program
+
+**Date**
+
+2026-07-21
+
+**Status**
+
+Accepted
+
+**Context**
+
+AI-assisted engineering workflows demonstrated significant delivery acceleration during Sprint 7 and Sprint 8 without altering the AgencyOS product scope.
+
+A dedicated engineering platform is required to evolve agent orchestration independently from the operational decision product.
+
+**Decision**
+
+Establish AgencyOS AI Factory as Program B, running in parallel with Program A (AgencyOS Product).
+
+The AI Factory is not part of the AgencyOS MVP.
+
+Both programs share vision but maintain independent delivery dependencies, repositories and governance boundaries.
+
+Until the AgencyOS MVP is delivered, the AI Factory shall not require changes to Product Architecture, Domain Model, Product Roadmap, Product Backlog or Product Schedule.
+
+**Consequences**
+
+AgencyOS maintains implementation focus on the operational decision platform.
+
+The AI Factory evolves agent workflows, prompts and orchestration in parallel.
+
+See ADR-006 and docs/02_Architecture/Program_Architecture.md.
+
+---
+
+## DEC-008-009
+
+**Title**
+
+Agent Runtime Profiles
+
+**Date**
+
+2026-07-21
+
+**Status**
+
+Planned
+
+**Context**
+
+AI Factory agents require standardized configuration for model selection, context scope, execution constraints and role-specific behavior.
+
+Ad-hoc agent configuration per task does not scale as the AI Factory matures.
+
+**Decision**
+
+Introduce Agent Runtime Profiles as a planned AI Factory capability.
+
+Each profile will define execution parameters for a specific agent role or task type, enabling consistent and governable agent behavior across sprints.
+
+Implementation is deferred to a future AI Factory evolution phase.
+
+**Consequences**
+
+Agent configuration will become explicit, versioned and reusable.
+
+No Agent Runtime Profile infrastructure is implemented during Sprint 8 or the AgencyOS MVP.
+
+---
+
+## DEC-008-010
+
+**Title**
+
+Agent Analytics and Engineering Intelligence
+
+**Date**
+
+2026-07-21
+
+**Status**
+
+Roadmap
+
+**Context**
+
+The AI Factory program requires visibility into agent effectiveness, sprint delivery metrics and engineering quality trends to support continuous improvement of AI-assisted development.
+
+**Decision**
+
+Define Agent Analytics and Engineering Intelligence as a roadmap capability for the AI Factory program.
+
+The capability will track agent execution outcomes, story completion patterns, review findings and engineering velocity to inform process optimization.
+
+Implementation is deferred beyond the current MVP and AI Factory initial phases.
+
+**Consequences**
+
+Engineering intelligence becomes a governed evolution path rather than an ad-hoc reporting effort.
+
+No analytics infrastructure is implemented during Sprint 8.
 
 ---

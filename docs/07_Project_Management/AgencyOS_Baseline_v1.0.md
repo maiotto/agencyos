@@ -1,6 +1,6 @@
 # AgencyOS Baseline v1.0
 
-**Versão:** 1.1
+**Versão:** 1.2
 
 **Data:** 21/07/2026
 
@@ -69,23 +69,35 @@ AgencyOS.Infrastructure
 
 AgencyOS.Shared
 
-## Domínios Implementados
+## Capabilities Implementadas
 
-### Comercial
+### Commercial Domain
 
-Lead → Client → Client Contact → Client Contract → Mission
+- Lead Management
+- Client Management
+- Client Contacts
+- Contracts
 
-### Operacional
+### Operations Domain
 
-Task → Execution Resource → Resource Assignment
+- Missions
+- Tasks
+- Execution Resources
+- Assignments
 
-### Inteligência Analítica
+### Planning Engines
 
-Capacity → Workload → Availability → Allocation Conflict Detection
+- Capacity Calculator
+- Workload Calculator
+- Availability Engine
+- Allocation Conflict Detection
 
 ### Decision Engine
 
-Delivery Strategy Builder → Evaluator → Ranking → Explanation
+- Delivery Strategy Builder
+- Delivery Strategy Evaluator
+- Delivery Strategy Ranking
+- Delivery Strategy Explanation
 
 ## APIs REST Implementadas
 
@@ -100,7 +112,7 @@ Delivery Strategy Builder → Evaluator → Ranking → Explanation
 - execution-resources
 - assignments
 
-### Inteligência Analítica
+### Planning Engines
 
 - capacity
 - workload
@@ -178,39 +190,71 @@ Sprint 1
 - Banco criado
 - Relacionamentos implementados
 
-Sprint 5
+Sprint 5 ✅ Completed
 
 - Commercial Foundation
 - US-001 a US-005
 
-Sprint 6
+Sprint 6 ✅ Completed
 
 - Operational Foundation
 - US-007 a US-009
 
-Sprint 7
+Sprint 7 ✅ Completed
 
 - Intelligent Capacity Planning
 - US-010 a US-013
 
-Sprint 8
+Sprint 8 ✅ Completed
 
 - Delivery Strategy Engine
 - US-014 a US-017
 
 ---
 
-# Programas
+# Programas Paralelos
+
+AgencyOS e AgencyOS AI Factory são **programas paralelos** que evoluem de forma independente dentro do mesmo ecossistema.
 
 ## Program A – AgencyOS Product
 
 Plataforma AI-First de apoio à decisão operacional.
 
+Responsável pelo MVP, domínios de negócio, engines analíticos e Decision Engine.
+
 ## Program B – AgencyOS AI Factory
 
 Plataforma de engenharia AI-First independente do MVP.
 
+Evolui workflows de agentes, prompts e orquestração em paralelo ao produto, sem alterar arquitetura, modelagem ou roadmap do MVP até à sua entrega.
+
 Ver ADR-006.
+
+---
+
+# Métricas do Projeto
+
+| Métrica | Valor |
+| ------- | ----- |
+| Testes automatizados | 69 |
+| Build warnings | 0 |
+| Build errors | 0 |
+
+---
+
+# Roadmap
+
+## Fase Atual
+
+**MVP Core Complete**
+
+Backend do MVP concluído: domínios Comercial e Operacional, Planning Engines e Decision Engine implementados e validados.
+
+## Próxima Fase
+
+- Stabilization
+- Integration
+- Frontend MVP
 
 ---
 
@@ -233,6 +277,8 @@ Sprint Atual:
 
 Sprint 8 – Concluída
 
-Decision Engine backend completo.
+MVP Core backend completo.
 
-Próximo passo definido pelo Product Roadmap.
+Decision Engine implementado e validado.
+
+Próxima fase: Stabilization, Integration e Frontend MVP.

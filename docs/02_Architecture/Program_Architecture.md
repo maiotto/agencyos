@@ -1,6 +1,6 @@
 # AgencyOS Program Architecture
 
-Version: 1.1
+Version: 1.2
 
 Status: Active
 
@@ -26,6 +26,10 @@ AgencyOS Program
 
       AgencyOS AI Factory
 
+AgencyOS AI Factory is an independent parallel program responsible for software engineering automation. It is not part of the AgencyOS MVP product scope.
+
+See ADR-006 and DEC-008-008.
+
 ---
 
 # Program A – AgencyOS Product
@@ -37,6 +41,14 @@ AI-First Operational Decision Platform for service organizations.
 ## Mission
 
 Transform sold contracts into the best execution strategy.
+
+## MVP Status
+
+The AgencyOS MVP backend is complete. Implemented capabilities span Commercial and Operations domains, Planning Engines and the Decision Engine pipeline.
+
+The platform supports the operational decision flow:
+
+Commercial → Delivery Strategy → Capacity Planning → AI Recommendation → Manager Approval
 
 ## Core Business Flow
 
@@ -90,43 +102,52 @@ Continuous Replanning
 
 ## Layered Architecture
 
-AgencyOS.Api
+Presentation
 
 ↓
 
-AgencyOS.Application
+Application
 
 ↓
 
-AgencyOS.Domain
+Domain
 
-AgencyOS.Infrastructure
+↓
 
-AgencyOS.Shared
+Infrastructure
 
 Dependencies always point inward.
 
 The Domain layer never depends on Infrastructure.
 
+| Layer | Project |
+|-------|---------|
+| Presentation | AgencyOS.Api |
+| Application | AgencyOS.Application |
+| Domain | AgencyOS.Domain |
+| Infrastructure | AgencyOS.Infrastructure |
+
+Cross-cutting utilities reside in AgencyOS.Shared and are referenced without reversing layer dependencies.
+
 ---
 
-## Domain Modules
+## Implemented Business Domains
 
-### Commercial Domain
+### Commercial
 
 Manages the commercial lifecycle from opportunity to contract.
 
 Entities: Lead, Client, ClientContact, ClientContract, Mission
 
-### Operational Domain
+### Operations
 
 Transforms contracts into executable work.
 
 Entities: Task, ExecutionResource, Assignment
 
-### Analytical Domain
+### Planning Engines
 
-Calculates operational intelligence from execution data.
+Calculates operational intelligence from execution data through a progressive analytical pipeline.
 
 Services:
 
@@ -135,11 +156,31 @@ Services:
 - AvailabilityEngineService
 - AllocationConflictDetectionService
 
-Calculation chain:
+Pipeline:
 
-Execution Data → Capacity → Workload → Availability → Conflict Detection
+Capacity
 
-### Decision Domain
+↓
+
+Workload
+
+↓
+
+Availability
+
+↓
+
+Allocation Conflict Detection
+
+Availability consumes Capacity and Workload results.
+
+Allocation Conflict Detection consumes Availability results.
+
+Each engine exposes its own REST controller and reuses upstream calculation results.
+
+See DEC-007-001 through DEC-007-004.
+
+### Decision Engine
 
 Generates, evaluates, ranks and explains delivery strategies.
 
@@ -150,9 +191,29 @@ Services:
 - DeliveryStrategyRankingService
 - DeliveryStrategyExplanationService
 
-Decision pipeline:
+Pipeline:
 
-Contract + Mission + Tasks → Builder → Evaluator → Ranking → Explanation
+Delivery Strategy Builder
+
+↓
+
+Delivery Strategy Evaluator
+
+↓
+
+Delivery Strategy Ranking
+
+↓
+
+Delivery Strategy Explanation
+
+The Evaluator reuses Planning Engines and Builder output.
+
+Ranking reuses Evaluator output.
+
+Explanation reuses Ranking output.
+
+See DEC-008-001 and DEC-008-006.
 
 ---
 
@@ -162,19 +223,19 @@ The Decision Engine is the core differentiator of AgencyOS.
 
 It does not make final decisions. It generates alternatives, measures them, ranks them and explains trade-offs.
 
-### Stage 1 – Strategy Builder
+### Stage 1 – Delivery Strategy Builder
 
 Generates all valid execution strategy candidates from active Execution Resources and applicable policies.
 
 Does not evaluate or rank.
 
-### Stage 2 – Strategy Evaluator
+### Stage 2 – Delivery Strategy Evaluator
 
-Calculates objective operational metrics for each strategy using Capacity, Workload, Availability and Conflict Detection engines.
+Calculates objective operational metrics for each strategy using Capacity, Workload, Availability and Allocation Conflict Detection engines.
 
 Does not rank or recommend.
 
-### Stage 3 – Strategy Ranking
+### Stage 3 – Delivery Strategy Ranking
 
 Orders evaluated strategies using configurable Company Decision Profiles.
 
@@ -182,7 +243,7 @@ Applies min-max normalization and weighted scoring.
 
 Does not generate explanations.
 
-### Stage 4 – Strategy Explanation
+### Stage 4 – Delivery Strategy Explanation
 
 Produces structured, deterministic explanations of ranking results.
 
@@ -198,13 +259,15 @@ Ranking priorities are defined by Company Decision Profiles.
 
 During the MVP, profiles are stored in application configuration and loaded through `ICompanyDecisionProfileRepository`.
 
-See ADR-007.
+Six default profiles are provided: Profit Maximization, Delivery Speed, Operational Stability, AI Adoption, Human Resource Optimization and Balanced Strategy.
+
+See ADR-007 and DEC-008-002.
 
 ---
 
 ## API Surface
 
-### Commercial and Operational
+### Commercial and Operations
 
 | Route | Purpose |
 |-------|---------|
@@ -217,7 +280,7 @@ See ADR-007.
 | execution-resources | Execution resource management |
 | assignments | Resource assignment management |
 
-### Analytical Engines
+### Planning Engines
 
 | Route | Purpose |
 |-------|---------|
@@ -257,6 +320,8 @@ Examples:
 
 This pattern ensures deterministic, testable logic without infrastructure dependencies.
 
+See DEC-007-002.
+
 ---
 
 ## Database Governance
@@ -277,11 +342,15 @@ AI executes. Humans govern.
 
 ## Purpose
 
-Independent engineering platform that accelerates AgencyOS delivery through AI-assisted development workflows.
+Independent parallel program responsible for software engineering automation.
+
+AgencyOS AI Factory accelerates AgencyOS delivery through AI-assisted development workflows.
 
 AgencyOS AI Factory is not part of the AgencyOS MVP product scope.
 
-See ADR-006.
+Both programs share the AgencyOS vision. Delivery dependencies remain independent.
+
+See ADR-006 and DEC-008-008.
 
 ---
 
@@ -383,6 +452,7 @@ Phase 5 – Complete AI Factory Orchestration
 |--------|---------------------|------------------------|
 | Deliverable | Operational Decision Platform | Engineering Automation Platform |
 | MVP Scope | Yes | No |
+| Relationship | Core product | Independent parallel program |
 | Repository | AgencyOS | AgencyOS-AI-Factory (future) |
 | Governance | Product Owner | Tech Lead |
 | Documentation | docs/ | prompts/ |

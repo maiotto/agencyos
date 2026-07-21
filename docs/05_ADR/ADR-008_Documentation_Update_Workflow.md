@@ -18,50 +18,63 @@ Date
 
 AgencyOS development is executed through AI-assisted User Story implementation across multiple sprints.
 
-Each sprint delivers multiple User Stories that introduce services, APIs, architectural patterns and engineering decisions.
-
-Implementation agents focus on source code delivery.
+Each User Story introduces services, APIs, architectural patterns and engineering decisions that must be reflected in project documentation.
 
 Without a governed documentation step, project documentation, ADRs, sprint records and agent guides drift from the implemented architecture.
 
-Sprint 8 completed the Decision Engine (US-014 through US-017) and required consolidated documentation updates across multiple project artifacts.
+Implementation agents focus on source code delivery. Documentation updates are frequently deferred or omitted when not explicitly required.
+
+Sprint 8 completed the Decision Engine (US-014 through US-017) and demonstrated the need for consolidated documentation updates aligned with delivered implementation.
 
 ---
 
 ## Decision
 
-A Documentation Update workflow is established as a separate governed step executed after sprint completion.
+Documentation updates become part of the Definition of Done for every User Story and engineering change.
 
-The workflow is executed by the Documentation Agent, not the Backend Agent.
+No User Story or change set is considered complete until relevant documentation has been updated to reflect the delivered implementation.
 
-The workflow is defined in prompts/system/06_Documentation_Update_Guide.md.
+Documentation updates are a mandatory step in the delivery workflow, executed after review and before commit.
 
-The workflow updates only documentation files. Source code must not be modified.
-
-The workflow must not change approved architecture decisions, backlog items or roadmap scope.
-
-Required outputs after each documentation consolidation:
-
-- Sprint Register updated with sprint completion
-- Decision Log updated with sprint architectural decisions
-- AgencyOS Baseline updated to reflect current architecture
-- Program Architecture updated when architecture evolves
-- ADRs created or updated when new decisions are formalized
-- Agent Execution Guide updated when process changes
+Documentation updates must not change approved architecture decisions, backlog items or roadmap scope unless those changes were already approved through governance.
 
 ---
 
-## Workflow Trigger
+## Workflow
 
-Execute after all User Stories in a sprint reach Definition of Done.
+The approved delivery workflow is:
 
-Execute when explicitly requested by the Product Owner or Tech Lead.
+```
+Implementation
+      ↓
+Build
+      ↓
+Review
+      ↓
+Documentation Update
+      ↓
+Commit
+      ↓
+Push
+```
 
----
+### Step Descriptions
 
-## Workflow Scope
+**Implementation** — Source code, tests and configuration changes required by the User Story are implemented.
 
-### In Scope
+**Build** — The solution builds successfully. Automated tests pass.
+
+**Review** — Code review validates correctness, conventions and alignment with approved architecture.
+
+**Documentation Update** — Project documentation is updated to reflect the delivered change. Only documentation files are modified during this step.
+
+**Commit** — Implementation and documentation changes are committed together as a single coherent delivery unit.
+
+**Push** — The committed change set is pushed to the remote repository.
+
+### Documentation Scope
+
+Documentation updates may include:
 
 - docs/07_Project_Management/Sprint_Register.md
 - docs/07_Project_Management/Decision_Log.md
@@ -71,62 +84,80 @@ Execute when explicitly requested by the Product Owner or Tech Lead.
 - prompts/system/05_Agent_Execution_Guide.md
 - prompts/system/06_Documentation_Update_Guide.md
 
-### Out of Scope
-
-- Source code
-- Database migrations
-- Backlog modifications
-- Roadmap modifications (except reflecting approved decisions already taken)
-- Architecture decision changes
+Documentation updates must not modify source code, database migrations, backlog items or roadmap scope.
 
 ---
 
-## Agent Responsibilities
+## Responsibilities
 
-### Backend Agent
+### Engineering Agents (Backend, Frontend, Database, DevOps)
 
-- Implements User Stories
-- Updates Swagger and HTTP tests
-- Does not perform sprint-level documentation consolidation
+- Implement User Stories according to approved architecture
+- Ensure build and tests pass before review
+- Identify documentation artifacts affected by the change
+- May perform documentation updates when no dedicated Documentation Agent is available
+
+### Code Review Agent
+
+- Validates implementation correctness and conventions
+- Confirms the change aligns with approved architecture
+- Verifies that documentation impact has been identified before approval
 
 ### Documentation Agent
 
-- Analyzes completed User Story implementations
-- Consolidates outcomes into project documentation
-- Creates ADRs for formalized decisions
+- Executes the Documentation Update step when assigned
+- Analyzes completed implementations and consolidates outcomes into project documentation
+- Creates or updates ADRs for formalized decisions
 - Does not modify source code
 
----
+### Tech Lead Agent
 
-## Alternatives Considered
+- Ensures the Documentation Update step is not skipped
+- Approves documentation scope when sprint-level consolidation is required
 
-### Documentation Updated Per User Story
+### Product Owner Agent
 
-Rejected because it fragments sprint-level architectural narrative and increases agent context usage across every story.
-
-### Manual Documentation Only
-
-Rejected because AI-assisted development requires synchronized agent guides and architecture references to maintain implementation consistency.
-
-### Backend Agent Updates Documentation
-
-Rejected because mixing implementation and consolidation increases scope creep risk and reduces documentation quality.
+- Confirms Definition of Done criteria are met, including documentation updates
+- May explicitly request documentation consolidation after sprint completion
 
 ---
 
-## Consequences
+## Benefits
 
-Positive
+- Documentation remains aligned with implemented architecture at all times.
+- Definition of Done enforces documentation as a delivery requirement, not an optional follow-up.
+- Commit and push include both implementation and documentation, preserving a coherent change history.
+- Agent guides and architecture references stay synchronized with current engineering practice.
+- Backend and engineering agents maintain focused implementation scope when a Documentation Agent is available.
+- Sprint outcomes and architectural decisions are recorded consistently and promptly.
 
-- Documentation remains aligned with implemented architecture.
-- Sprint outcomes are recorded consistently.
-- Agent guides reflect current engineering process.
-- Backend Agents maintain focused implementation scope.
+---
 
-Negative
+## Risks
 
-- Requires an additional agent execution step after each sprint.
+- Documentation updates add time to each delivery cycle.
+- Engineering agents may perform superficial documentation updates when a dedicated Documentation Agent is unavailable.
 - Documentation consolidation depends on accurate analysis of completed implementations.
+- Mixing implementation and documentation in the same commit increases review scope.
+- Without enforcement at review, the Documentation Update step may be skipped under delivery pressure.
+
+---
+
+## Future Evolution
+
+Documentation updates may be executed by a dedicated Documentation Agent as part of the AgencyOS AI Factory (see ADR-006).
+
+In the AI Factory model, the Documentation Agent becomes the primary executor of the Documentation Update workflow step, operating after Code Review and before Commit.
+
+The workflow sequence remains unchanged:
+
+```
+Implementation → Build → Review → Documentation Update → Commit → Push
+```
+
+Post-MVP, the Documentation Agent may be orchestrated automatically as part of the AI Factory pipeline, with humans retaining governance over product vision, strategy and final decisions.
+
+Sprint-level documentation consolidation may continue as a separate governed step after all User Stories in a sprint reach Definition of Done.
 
 ---
 

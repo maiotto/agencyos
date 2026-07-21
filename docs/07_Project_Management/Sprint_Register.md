@@ -505,4 +505,14 @@ The Decision Engine MVP backend is complete.
 
 ## Next Sprint
 
-Pending Product Roadmap definition.
+Sprint 9 – Stabilization & MVP Validation
+
+# Sprint 9
+
+## Name
+
+Stabilization & MVP Validation
+
+## Status
+
+📋 Planned
