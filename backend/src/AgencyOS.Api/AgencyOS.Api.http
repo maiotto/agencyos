@@ -367,3 +367,63 @@ DELETE {{AgencyOS.Api_HostAddress}}/tasks/{{taskId}}
 
 PATCH {{AgencyOS.Api_HostAddress}}/tasks/{{taskId}}/complete
 Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/execution-resources
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/execution-resources?resourceType=Internal%20Human&status=Active&skill=Design&orderBy=resourceName&orderDirection=asc
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/execution-resources?orderBy=resourceType&orderDirection=desc
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/execution-resources/{{executionResourceId}}
+Accept: application/json
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/execution-resources
+Content-Type: application/json
+
+{
+  "code": "RES-001",
+  "name": "Senior Designer",
+  "resourceType": "Internal Human",
+  "status": "Active",
+  "capacityHoursPerWeek": 40.0,
+  "costRate": 85.00,
+  "currency": "USD",
+  "skills": ["Design", "UX", "Figma"],
+  "availability": "Monday to Friday, 9am to 6pm",
+  "notes": "Primary design resource for client projects"
+}
+
+###
+
+PUT {{AgencyOS.Api_HostAddress}}/execution-resources/{{executionResourceId}}
+Content-Type: application/json
+
+{
+  "code": "RES-001",
+  "name": "Senior Designer - Updated",
+  "resourceType": "Internal Human",
+  "status": "Active",
+  "capacityHoursPerWeek": 36.0,
+  "costRate": 90.00,
+  "currency": "USD",
+  "skills": ["Design", "UX", "Figma", "Prototyping"],
+  "availability": "Monday to Friday, 9am to 5pm",
+  "notes": "Updated capacity and skills"
+}
+
+###
+
+DELETE {{AgencyOS.Api_HostAddress}}/execution-resources/{{executionResourceId}}

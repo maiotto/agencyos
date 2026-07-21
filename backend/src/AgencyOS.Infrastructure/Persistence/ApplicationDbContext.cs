@@ -30,6 +30,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<TaskTypeLookup> TaskTypes => Set<TaskTypeLookup>();
 
+    public DbSet<ExecutionResource> ExecutionResources => Set<ExecutionResource>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
