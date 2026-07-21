@@ -22,6 +22,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<ClientContact> ClientContacts => Set<ClientContact>();
 
+    public DbSet<ClientContract> ClientContracts => Set<ClientContract>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

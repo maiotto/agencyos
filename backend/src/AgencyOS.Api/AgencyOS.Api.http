@@ -228,3 +228,83 @@ DELETE {{AgencyOS.Api_HostAddress}}/contacts/{{contactId}}
 
 PATCH {{AgencyOS.Api_HostAddress}}/contacts/{{contactId}}/primary
 Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contracts?page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contracts?clientId={{clientId}}&status=Draft&contractType=Fixed%20Price&startDate=2026-01-01&endDate=2026-12-31&orderBy=contractName&orderDirection=asc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contracts?orderBy=client&orderDirection=asc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contracts?orderBy=startDate&orderDirection=desc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contracts?orderBy=estimatedValue&orderDirection=desc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contracts/{{contractId}}
+Accept: application/json
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/contracts
+Content-Type: application/json
+
+{
+  "clientId": "{{clientId}}",
+  "contractCode": "CTR-001",
+  "contractName": "Website Redesign Project",
+  "contractType": "Fixed Price",
+  "status": "Draft",
+  "estimatedValue": 50000.00,
+  "startDate": "2026-07-01",
+  "endDate": "2026-12-31"
+}
+
+###
+
+PUT {{AgencyOS.Api_HostAddress}}/contracts/{{contractId}}
+Content-Type: application/json
+
+{
+  "contractCode": "CTR-001",
+  "contractName": "Website Redesign Project - Phase 2",
+  "contractType": "Fixed Price",
+  "status": "Draft",
+  "estimatedValue": 55000.00,
+  "startDate": "2026-07-01",
+  "endDate": "2026-12-31"
+}
+
+###
+
+DELETE {{AgencyOS.Api_HostAddress}}/contracts/{{contractId}}
+
+###
+
+PATCH {{AgencyOS.Api_HostAddress}}/contracts/{{contractId}}/activate
+Accept: application/json
+
+###
+
+PATCH {{AgencyOS.Api_HostAddress}}/contracts/{{contractId}}/close
+Accept: application/json
+
+###
+
+PATCH {{AgencyOS.Api_HostAddress}}/contracts/{{contractId}}/cancel
+Accept: application/json

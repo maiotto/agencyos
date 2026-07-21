@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<ILeadService, LeadService>();
         services.AddScoped<IClientService, ClientService>();
         services.AddScoped<IContactService, ContactService>();
+        services.AddScoped<IClientContractService, ClientContractService>();
         services.AddValidatorsFromAssemblyContaining<CreateMissionRequestValidator>();
 
         return services;
