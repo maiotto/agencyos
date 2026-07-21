@@ -1,109 +1,163 @@
-@AgencyOS.Api_HostAddress = http://localhost:5188
-
-GET {{AgencyOS.Api_HostAddress}}/missions
-Accept: application/json
-
-###
-
-GET {{AgencyOS.Api_HostAddress}}/missions/{{missionId}}
-Accept: application/json
-
-###
-
-POST {{AgencyOS.Api_HostAddress}}/missions
-Content-Type: application/json
-
-{
-  "clientContractId": "00000000-0000-0000-0000-000000000001",
-  "code": "MSN-001",
-  "name": "Sample Mission",
-  "description": "Mission description",
-  "missionTypeId": "00000000-0000-0000-0000-000000000002",
-  "missionStatusId": "00000000-0000-0000-0000-000000000003",
-  "priority": "NORMAL",
-  "startDate": "2026-07-01",
-  "endDate": "2026-12-31"
-}
-
-###
-
-PUT {{AgencyOS.Api_HostAddress}}/missions/{{missionId}}
-Content-Type: application/json
-
-{
-  "clientContractId": "00000000-0000-0000-0000-000000000001",
-  "code": "MSN-001",
-  "name": "Updated Mission",
-  "description": "Updated description",
-  "missionTypeId": "00000000-0000-0000-0000-000000000002",
-  "missionStatusId": "00000000-0000-0000-0000-000000000003",
-  "priority": "HIGH",
-  "startDate": "2026-07-01",
-  "endDate": "2026-12-31"
-}
-
-###
-
-DELETE {{AgencyOS.Api_HostAddress}}/missions/{{missionId}}
-
-###
-
-GET {{AgencyOS.Api_HostAddress}}/leads?page=1&pageSize=20
-Accept: application/json
-
-###
-
-GET {{AgencyOS.Api_HostAddress}}/leads?status=Prospect&company=Acme&assignedUserId=00000000-0000-0000-0000-000000000001&page=1&pageSize=20
-Accept: application/json
-
-###
-
-GET {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}
-Accept: application/json
-
-###
-
-POST {{AgencyOS.Api_HostAddress}}/leads
-Content-Type: application/json
-
-{
-  "companyName": "Acme Corporation",
-  "leadName": "Jane Doe",
-  "email": "jane.doe@acme.com",
-  "phone": "+1-555-0100",
-  "source": "Website",
-  "status": "Prospect",
-  "estimatedContractValue": 50000.00,
-  "assignedUserId": "00000000-0000-0000-0000-000000000001",
-  "website": "https://acme.com",
-  "segment": "Technology",
-  "notes": "Initial contact via website form"
-}
-
-###
-
-PUT {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}
-Content-Type: application/json
-
-{
-  "companyName": "Acme Corporation",
-  "leadName": "Jane Doe",
-  "email": "jane.doe@acme.com",
-  "phone": "+1-555-0101",
-  "source": "Website",
-  "status": "Qualified",
-  "estimatedContractValue": 75000.00,
-  "assignedUserId": "00000000-0000-0000-0000-000000000001",
-  "website": "https://acme.com",
-  "segment": "Technology",
-  "notes": "Follow-up call completed"
-}
-
-###
-
-DELETE {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}
-
-###
-
-POST {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}/convert
-Accept: application/json
+@AgencyOS.Api_HostAddress = http://localhost:5188
+
+GET {{AgencyOS.Api_HostAddress}}/missions
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/missions/{{missionId}}
+Accept: application/json
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/missions
+Content-Type: application/json
+
+{
+  "clientContractId": "00000000-0000-0000-0000-000000000001",
+  "code": "MSN-001",
+  "name": "Sample Mission",
+  "description": "Mission description",
+  "missionTypeId": "00000000-0000-0000-0000-000000000002",
+  "missionStatusId": "00000000-0000-0000-0000-000000000003",
+  "priority": "NORMAL",
+  "startDate": "2026-07-01",
+  "endDate": "2026-12-31"
+}
+
+###
+
+PUT {{AgencyOS.Api_HostAddress}}/missions/{{missionId}}
+Content-Type: application/json
+
+{
+  "clientContractId": "00000000-0000-0000-0000-000000000001",
+  "code": "MSN-001",
+  "name": "Updated Mission",
+  "description": "Updated description",
+  "missionTypeId": "00000000-0000-0000-0000-000000000002",
+  "missionStatusId": "00000000-0000-0000-0000-000000000003",
+  "priority": "HIGH",
+  "startDate": "2026-07-01",
+  "endDate": "2026-12-31"
+}
+
+###
+
+DELETE {{AgencyOS.Api_HostAddress}}/missions/{{missionId}}
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/leads?page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/leads?status=Prospect&company=Acme&assignedUserId=00000000-0000-0000-0000-000000000001&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}
+Accept: application/json
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/leads
+Content-Type: application/json
+
+{
+  "companyName": "Acme Corporation",
+  "leadName": "Jane Doe",
+  "email": "jane.doe@acme.com",
+  "phone": "+1-555-0100",
+  "source": "Website",
+  "status": "Prospect",
+  "estimatedContractValue": 50000.00,
+  "assignedUserId": "00000000-0000-0000-0000-000000000001",
+  "website": "https://acme.com",
+  "segment": "Technology",
+  "notes": "Initial contact via website form"
+}
+
+###
+
+PUT {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}
+Content-Type: application/json
+
+{
+  "companyName": "Acme Corporation",
+  "leadName": "Jane Doe",
+  "email": "jane.doe@acme.com",
+  "phone": "+1-555-0101",
+  "source": "Website",
+  "status": "Qualified",
+  "estimatedContractValue": 75000.00,
+  "assignedUserId": "00000000-0000-0000-0000-000000000001",
+  "website": "https://acme.com",
+  "segment": "Technology",
+  "notes": "Follow-up call completed"
+}
+
+###
+
+DELETE {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}/convert
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/clients?page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/clients?status=Active&industry=Technology&companyName=Acme&orderBy=companyName&orderDirection=asc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/clients?orderBy=createdAt&orderDirection=desc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/clients/{{clientId}}
+Accept: application/json
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/clients
+Content-Type: application/json
+
+{
+  "legalName": "Acme Corporation Ltd.",
+  "tradeName": "Acme Corp",
+  "taxIdentifier": "12-3456789",
+  "website": "https://acme.com",
+  "industry": "Technology",
+  "status": "Active",
+  "accountOwner": "00000000-0000-0000-0000-000000000001"
+}
+
+###
+
+PUT {{AgencyOS.Api_HostAddress}}/clients/{{clientId}}
+Content-Type: application/json
+
+{
+  "legalName": "Acme Corporation Ltd.",
+  "tradeName": "Acme Corporation",
+  "taxIdentifier": "12-3456789",
+  "website": "https://acme.com",
+  "industry": "Technology",
+  "status": "Active",
+  "accountOwner": "00000000-0000-0000-0000-000000000001"
+}
+
+###
+
+DELETE {{AgencyOS.Api_HostAddress}}/clients/{{clientId}}
