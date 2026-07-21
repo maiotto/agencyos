@@ -510,3 +510,23 @@ GET {{AgencyOS.Api_HostAddress}}/capacity?periodEndDate=2026-07-31
 Accept: application/json
 
 ###
+
+GET {{AgencyOS.Api_HostAddress}}/workload?periodStartDate=2026-07-01&periodEndDate=2026-07-31
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/workload/summary?periodStartDate=2026-07-01&periodEndDate=2026-07-31
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/workload/{{executionResourceId}}?periodStartDate=2026-07-01&periodEndDate=2026-07-31
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/workload?periodEndDate=2026-07-31
+Accept: application/json
+
+###
