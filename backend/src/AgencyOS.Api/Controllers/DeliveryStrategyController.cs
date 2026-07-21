@@ -11,13 +11,16 @@ public class DeliveryStrategyController : ControllerBase
 {
     private readonly IDeliveryStrategyBuilderService _deliveryStrategyBuilderService;
     private readonly IDeliveryStrategyEvaluatorService _deliveryStrategyEvaluatorService;
+    private readonly IDeliveryStrategyRankingService _deliveryStrategyRankingService;
 
     public DeliveryStrategyController(
         IDeliveryStrategyBuilderService deliveryStrategyBuilderService,
-        IDeliveryStrategyEvaluatorService deliveryStrategyEvaluatorService)
+        IDeliveryStrategyEvaluatorService deliveryStrategyEvaluatorService,
+        IDeliveryStrategyRankingService deliveryStrategyRankingService)
     {
         _deliveryStrategyBuilderService = deliveryStrategyBuilderService;
         _deliveryStrategyEvaluatorService = deliveryStrategyEvaluatorService;
+        _deliveryStrategyRankingService = deliveryStrategyRankingService;
     }
 
     /// <summary>
@@ -82,6 +85,26 @@ public class DeliveryStrategyController : ControllerBase
         CancellationToken cancellationToken)
     {
         var response = await _deliveryStrategyEvaluatorService.EvaluateAsync(request, cancellationToken);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Ranks evaluated delivery strategies using a configurable company decision profile.
+    /// </summary>
+    /// <response code="200">Delivery strategies ranked from best to worst.</response>
+    /// <response code="400">Validation error.</response>
+    /// <response code="404">Contract, mission, or decision profile not found.</response>
+    /// <response code="409">Business rule violation.</response>
+    [HttpPost("rank")]
+    [ProducesResponseType(typeof(RankDeliveryStrategyResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<RankDeliveryStrategyResponse>> Rank(
+        [FromBody] RankDeliveryStrategyRequest request,
+        CancellationToken cancellationToken)
+    {
+        var response = await _deliveryStrategyRankingService.RankAsync(request, cancellationToken);
         return Ok(response);
     }
 }

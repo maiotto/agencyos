@@ -1,4 +1,5 @@
 using AgencyOS.Application.Interfaces;
+using AgencyOS.Infrastructure.Configuration;
 using AgencyOS.Infrastructure.Persistence;
 using AgencyOS.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,10 @@ public static class DependencyInjection
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<IExecutionResourceRepository, ExecutionResourceRepository>();
         services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+        services.AddScoped<ICompanyDecisionProfileRepository, CompanyDecisionProfileRepository>();
+
+        services.Configure<CompanyDecisionProfilesOptions>(
+            configuration.GetSection(CompanyDecisionProfilesOptions.SectionName));
 
         return services;
     }

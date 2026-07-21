@@ -604,3 +604,16 @@ Content-Type: application/json
 }
 
 ###
+
+POST {{AgencyOS.Api_HostAddress}}/delivery-strategies/rank
+Content-Type: application/json
+
+{
+  "contractId": "{{contractId}}",
+  "missionId": "{{missionId}}",
+  "periodStartDate": "2026-07-01",
+  "periodEndDate": "2026-07-31",
+  "companyDecisionProfileId": "11111111-1111-1111-1111-111111111106"
+}
+
+###
