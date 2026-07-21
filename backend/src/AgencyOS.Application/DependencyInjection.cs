@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IDeliveryStrategyBuilderService, DeliveryStrategyBuilderService>();
         services.AddScoped<IDeliveryStrategyEvaluatorService, DeliveryStrategyEvaluatorService>();
         services.AddScoped<IDeliveryStrategyRankingService, DeliveryStrategyRankingService>();
+        services.AddScoped<IDeliveryStrategyExplanationService, DeliveryStrategyExplanationService>();
         services.AddValidatorsFromAssemblyContaining<CreateMissionRequestValidator>();
 
         return services;

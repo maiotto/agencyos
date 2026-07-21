@@ -358,3 +358,151 @@ The analytical foundation required by the Decision Engine is now complete.
 ## Next Sprint
 
 Sprint 8 – Delivery Strategy Engine
+
+# Sprint 8
+
+## Name
+
+Delivery Strategy Engine
+
+## Status
+
+✅ Completed
+
+## Objective
+
+Implement the AgencyOS Decision Engine responsible for generating, evaluating, ranking and explaining delivery strategies for Client Contracts, enabling managers to compare execution alternatives and understand operational trade-offs.
+
+## Scope
+
+- US-014 Delivery Strategy Builder
+
+- US-015 Delivery Strategy Evaluator
+
+- US-016 Delivery Strategy Ranking
+
+- US-017 Delivery Strategy Explanation
+
+## Deliverables
+
+- Delivery Strategy Builder Engine
+
+- Delivery Strategy Evaluator Engine
+
+- Delivery Strategy Ranking Engine
+
+- Delivery Strategy Explanation Engine
+
+- Company Decision Profiles (configuration-based)
+
+- DeliveryStrategyController REST APIs
+
+- Static Calculation Components
+
+- Unit Tests
+
+- Swagger Documentation
+
+- HTTP Test Collection
+
+## Technical Validation
+
+- Clean Architecture maintained
+
+- Decision Engine pipeline implemented as four isolated services
+
+- Analytical engines from Sprint 7 reused without duplicated logic
+
+- Company Decision Profiles loaded from configuration
+
+- Deterministic strategy generation, evaluation, ranking and explanation
+
+- Layer separation preserved
+
+- Build completed successfully
+
+### Build Status
+
+- 0 Errors
+
+- 0 Warnings
+
+### Automated Tests
+
+69 Tests
+
+69 Passed
+
+0 Failed
+
+## Architecture Review
+
+**Status:** Approved
+
+Sprint 8 completed the AgencyOS Decision Engine.
+
+The Delivery Strategy pipeline follows a strict single-responsibility chain:
+
+Contract + Mission + Tasks
+
+↓
+
+Strategy Builder
+
+↓
+
+Strategy Evaluator
+
+↓
+
+Strategy Ranking
+
+↓
+
+Strategy Explanation
+
+Each stage reuses prior implementations and never modifies operational data.
+
+Company Decision Profiles provide configurable business priorities for ranking without hardcoded strategy preferences.
+
+Structured explanations use deterministic reason codes and evaluation metrics rather than LLM generation, preserving explainability and auditability.
+
+The platform now supports the complete operational decision flow defined in the MVP:
+
+Commercial → Delivery Strategy → Capacity Planning → AI Recommendation → Manager Approval
+
+## Technical Debt
+
+No new technical debt identified.
+
+Previously registered technical debt (TD-001) remains unchanged.
+
+## Sprint Assessment
+
+| Category | Result |
+
+|----------|--------|
+
+| Scope | ✅ Completed |
+
+| Quality | ✅ Approved |
+
+| Architecture | ✅ Approved |
+
+| Build | ✅ Approved |
+
+| Automated Tests | ✅ Approved |
+
+| Documentation | ✅ Updated |
+
+| Ready for Next Sprint | ✅ Yes |
+
+## Outcome
+
+Sprint 8 successfully transformed AgencyOS from an operational planning platform into an AI-First Operational Decision Platform capable of generating execution alternatives, evaluating them objectively, ranking them by business priorities and explaining the results to managers.
+
+The Decision Engine MVP backend is complete.
+
+## Next Sprint
+
+Pending Product Roadmap definition.

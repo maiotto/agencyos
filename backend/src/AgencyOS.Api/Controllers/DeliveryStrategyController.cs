@@ -12,15 +12,18 @@ public class DeliveryStrategyController : ControllerBase
     private readonly IDeliveryStrategyBuilderService _deliveryStrategyBuilderService;
     private readonly IDeliveryStrategyEvaluatorService _deliveryStrategyEvaluatorService;
     private readonly IDeliveryStrategyRankingService _deliveryStrategyRankingService;
+    private readonly IDeliveryStrategyExplanationService _deliveryStrategyExplanationService;
 
     public DeliveryStrategyController(
         IDeliveryStrategyBuilderService deliveryStrategyBuilderService,
         IDeliveryStrategyEvaluatorService deliveryStrategyEvaluatorService,
-        IDeliveryStrategyRankingService deliveryStrategyRankingService)
+        IDeliveryStrategyRankingService deliveryStrategyRankingService,
+        IDeliveryStrategyExplanationService deliveryStrategyExplanationService)
     {
         _deliveryStrategyBuilderService = deliveryStrategyBuilderService;
         _deliveryStrategyEvaluatorService = deliveryStrategyEvaluatorService;
         _deliveryStrategyRankingService = deliveryStrategyRankingService;
+        _deliveryStrategyExplanationService = deliveryStrategyExplanationService;
     }
 
     /// <summary>
@@ -105,6 +108,31 @@ public class DeliveryStrategyController : ControllerBase
         CancellationToken cancellationToken)
     {
         var response = await _deliveryStrategyRankingService.RankAsync(request, cancellationToken);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Explains why a ranked delivery strategy received its ranking position and score.
+    /// </summary>
+    /// <response code="200">Structured explanation generated for the ranked strategy.</response>
+    /// <response code="400">Validation error.</response>
+    /// <response code="404">Strategy, contract, mission, or decision profile not found.</response>
+    /// <response code="409">Business rule violation.</response>
+    [HttpGet("{strategyId:guid}/explanation")]
+    [ProducesResponseType(typeof(DeliveryStrategyExplanationResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<DeliveryStrategyExplanationResponse>> GetExplanation(
+        Guid strategyId,
+        [FromQuery] DeliveryStrategyExplanationQueryParameters parameters,
+        CancellationToken cancellationToken)
+    {
+        var response = await _deliveryStrategyExplanationService.GetExplanationAsync(
+            strategyId,
+            parameters,
+            cancellationToken);
+
         return Ok(response);
     }
 }
