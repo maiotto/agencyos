@@ -25,4 +25,6 @@ public class Client
     public DateTimeOffset UpdatedAt { get; set; }
 
     public Lead? Lead { get; set; }
+
+    public ICollection<ClientContact> ClientContacts { get; set; } = [];
 }

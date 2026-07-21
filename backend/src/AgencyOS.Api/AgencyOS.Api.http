@@ -161,3 +161,70 @@ Content-Type: application/json
 ###
 
 DELETE {{AgencyOS.Api_HostAddress}}/clients/{{clientId}}
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contacts?page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contacts?clientId={{clientId}}&status=Active&isPrimaryContact=true&orderBy=firstName&orderDirection=asc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contacts?orderBy=lastName&orderDirection=desc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contacts?orderBy=client&orderDirection=asc&page=1&pageSize=20
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/contacts/{{contactId}}
+Accept: application/json
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/contacts
+Content-Type: application/json
+
+{
+  "clientId": "{{clientId}}",
+  "firstName": "John",
+  "lastName": "Smith",
+  "jobTitle": "Operations Manager",
+  "email": "john.smith@acme.com",
+  "phone": "+1-555-0200",
+  "mobile": "+1-555-0201",
+  "isPrimaryContact": true,
+  "status": "Active"
+}
+
+###
+
+PUT {{AgencyOS.Api_HostAddress}}/contacts/{{contactId}}
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "jobTitle": "Senior Operations Manager",
+  "email": "john.smith@acme.com",
+  "phone": "+1-555-0200",
+  "mobile": "+1-555-0201",
+  "isPrimaryContact": true,
+  "status": "Active"
+}
+
+###
+
+DELETE {{AgencyOS.Api_HostAddress}}/contacts/{{contactId}}
+
+###
+
+PATCH {{AgencyOS.Api_HostAddress}}/contacts/{{contactId}}/primary
+Accept: application/json

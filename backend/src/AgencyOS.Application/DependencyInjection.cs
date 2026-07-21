@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddScoped<IMissionService, MissionService>();
         services.AddScoped<ILeadService, LeadService>();
         services.AddScoped<IClientService, ClientService>();
+        services.AddScoped<IContactService, ContactService>();
         services.AddValidatorsFromAssemblyContaining<CreateMissionRequestValidator>();
 
         return services;

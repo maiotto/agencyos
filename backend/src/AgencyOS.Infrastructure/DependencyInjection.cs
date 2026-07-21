@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IMissionRepository, MissionRepository>();
         services.AddScoped<ILeadRepository, LeadRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
+        services.AddScoped<IContactRepository, ContactRepository>();
 
         return services;
     }
