@@ -570,3 +570,25 @@ GET {{AgencyOS.Api_HostAddress}}/allocation-conflicts?periodEndDate=2026-07-31
 Accept: application/json
 
 ###
+
+POST {{AgencyOS.Api_HostAddress}}/delivery-strategies/build
+Content-Type: application/json
+
+{
+  "contractId": "{{contractId}}",
+  "missionId": "{{missionId}}",
+  "periodStartDate": "2026-07-01",
+  "periodEndDate": "2026-07-31"
+}
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/delivery-strategies/{{contractId}}?missionId={{missionId}}&periodStartDate=2026-07-01&periodEndDate=2026-07-31
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/delivery-strategies/{{contractId}}?periodStartDate=2026-07-01&periodEndDate=2026-07-31
+Accept: application/json
+
+###
