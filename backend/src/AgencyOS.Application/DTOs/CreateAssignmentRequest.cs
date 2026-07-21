@@ -1,0 +1,22 @@
+namespace AgencyOS.Application.DTOs;
+
+public class CreateAssignmentRequest
+{
+    public Guid TaskId { get; set; }
+
+    public Guid ExecutionResourceId { get; set; }
+
+    public string AssignmentRole { get; set; } = string.Empty;
+
+    public decimal PlannedHours { get; set; }
+
+    public DateOnly PlannedStartDate { get; set; }
+
+    public DateOnly PlannedEndDate { get; set; }
+
+    public int AllocationPercentage { get; set; }
+
+    public string Status { get; set; } = string.Empty;
+
+    public string? Notes { get; set; }
+}

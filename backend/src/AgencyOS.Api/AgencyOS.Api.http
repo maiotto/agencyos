@@ -427,3 +427,64 @@ Content-Type: application/json
 ###
 
 DELETE {{AgencyOS.Api_HostAddress}}/execution-resources/{{executionResourceId}}
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/assignments
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/assignments?taskId={{taskId}}&missionId={{missionId}}&executionResourceId={{executionResourceId}}&resourceType=Internal%20Human&status=Planned&orderBy=plannedStartDate&orderDirection=asc
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/assignments?orderBy=plannedHours&orderDirection=desc
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/assignments/{{assignmentId}}
+Accept: application/json
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/assignments
+Content-Type: application/json
+
+{
+  "taskId": "{{taskId}}",
+  "executionResourceId": "{{executionResourceId}}",
+  "assignmentRole": "Responsible",
+  "plannedHours": 16.0,
+  "plannedStartDate": "2026-07-01",
+  "plannedEndDate": "2026-07-15",
+  "allocationPercentage": 50,
+  "status": "Planned",
+  "notes": "Primary designer assigned to homepage task"
+}
+
+###
+
+PUT {{AgencyOS.Api_HostAddress}}/assignments/{{assignmentId}}
+Content-Type: application/json
+
+{
+  "assignmentRole": "Responsible",
+  "plannedHours": 20.0,
+  "plannedStartDate": "2026-07-01",
+  "plannedEndDate": "2026-07-20",
+  "allocationPercentage": 75,
+  "status": "Confirmed",
+  "notes": "Updated allocation and hours"
+}
+
+###
+
+DELETE {{AgencyOS.Api_HostAddress}}/assignments/{{assignmentId}}
+
+###
+
+PATCH {{AgencyOS.Api_HostAddress}}/assignments/{{assignmentId}}/cancel
+Accept: application/json

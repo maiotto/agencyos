@@ -32,6 +32,8 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<ExecutionResource> ExecutionResources => Set<ExecutionResource>();
 
+    public DbSet<Assignment> Assignments => Set<Assignment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
