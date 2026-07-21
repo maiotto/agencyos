@@ -24,6 +24,12 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<ClientContract> ClientContracts => Set<ClientContract>();
 
+    public DbSet<MissionTask> MissionTasks => Set<MissionTask>();
+
+    public DbSet<TaskStatusLookup> TaskStatuses => Set<TaskStatusLookup>();
+
+    public DbSet<TaskTypeLookup> TaskTypes => Set<TaskTypeLookup>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

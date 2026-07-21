@@ -308,3 +308,62 @@ Accept: application/json
 
 PATCH {{AgencyOS.Api_HostAddress}}/contracts/{{contractId}}/cancel
 Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/tasks
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/tasks?missionId={{missionId}}&status=Draft&priority=High&taskTypeId=00000000-0000-0000-0000-000000000004
+Accept: application/json
+
+###
+
+GET {{AgencyOS.Api_HostAddress}}/tasks/{{taskId}}
+Accept: application/json
+
+###
+
+POST {{AgencyOS.Api_HostAddress}}/tasks
+Content-Type: application/json
+
+{
+  "missionId": "{{missionId}}",
+  "code": "TSK-001",
+  "name": "Design Homepage",
+  "description": "Create homepage wireframes and visual design",
+  "taskTypeId": "00000000-0000-0000-0000-000000000004",
+  "taskStatusId": "00000000-0000-0000-0000-000000000005",
+  "priority": "High",
+  "estimatedHours": 16.0,
+  "plannedStartDate": "2026-07-01",
+  "plannedEndDate": "2026-07-15"
+}
+
+###
+
+PUT {{AgencyOS.Api_HostAddress}}/tasks/{{taskId}}
+Content-Type: application/json
+
+{
+  "code": "TSK-001",
+  "name": "Design Homepage - Revised",
+  "description": "Updated scope for homepage design",
+  "taskTypeId": "00000000-0000-0000-0000-000000000004",
+  "taskStatusId": "00000000-0000-0000-0000-000000000005",
+  "priority": "Critical",
+  "estimatedHours": 20.0,
+  "plannedStartDate": "2026-07-01",
+  "plannedEndDate": "2026-07-20"
+}
+
+###
+
+DELETE {{AgencyOS.Api_HostAddress}}/tasks/{{taskId}}
+
+###
+
+PATCH {{AgencyOS.Api_HostAddress}}/tasks/{{taskId}}/complete
+Accept: application/json
