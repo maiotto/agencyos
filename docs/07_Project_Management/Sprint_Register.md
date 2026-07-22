@@ -541,3 +541,25 @@ Establish deterministic reference data initialization so local environments are 
 - `supabase db reset` applies migrations and seed successfully
 - Reference tables populated with stable IDs across resets
 - Mission and Task creation unblocked without manual database inserts
+
+### WP-005 – Delivery Strategy Builder Diagnostics
+
+**Status:** ✅ Completed
+
+**Date:** 2026-07-22
+
+**Objective**
+
+Instrument Delivery Strategy Builder generation so zero-strategy outcomes can be diagnosed from structured logs without changing business logic.
+
+**Deliverables**
+
+- Structured diagnostics inside `DeliveryStrategyBuilderService.GenerateStrategiesAsync()`
+- Input, mix-validity, assignment, operational-validation and summary counters logged
+- Architectural decision registered as DEC-009-002
+
+**Validation**
+
+- No algorithm, domain rule, repository, DTO or controller changes
+- Existing Delivery Strategy Builder tests remain green
+- Logs expose why candidate mixes are rejected when zero strategies are produced

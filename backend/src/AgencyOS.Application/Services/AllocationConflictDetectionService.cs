@@ -223,7 +223,8 @@ public class AllocationConflictDetectionService : IAllocationConflictDetectionSe
         return new CapacityQueryParameters
         {
             PeriodStartDate = parameters.PeriodStartDate,
-            PeriodEndDate = parameters.PeriodEndDate
+            PeriodEndDate = parameters.PeriodEndDate,
+            ExcludeMissionId = parameters.ExcludeMissionId
         };
     }
 
@@ -232,7 +233,8 @@ public class AllocationConflictDetectionService : IAllocationConflictDetectionSe
         return new WorkloadQueryParameters
         {
             PeriodStartDate = parameters.PeriodStartDate,
-            PeriodEndDate = parameters.PeriodEndDate
+            PeriodEndDate = parameters.PeriodEndDate,
+            ExcludeMissionId = parameters.ExcludeMissionId
         };
     }
 
@@ -242,7 +244,8 @@ public class AllocationConflictDetectionService : IAllocationConflictDetectionSe
         return new AvailabilityQueryParameters
         {
             PeriodStartDate = parameters.PeriodStartDate,
-            PeriodEndDate = parameters.PeriodEndDate
+            PeriodEndDate = parameters.PeriodEndDate,
+            ExcludeMissionId = parameters.ExcludeMissionId
         };
     }
 }

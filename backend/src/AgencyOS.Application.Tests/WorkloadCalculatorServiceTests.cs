@@ -48,6 +48,7 @@ public class WorkloadCalculatorServiceTests
                 parameters.PeriodStartDate,
                 parameters.PeriodEndDate,
                 null,
+                null,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Assignment>
             {
@@ -112,6 +113,7 @@ public class WorkloadCalculatorServiceTests
             .Setup(repository => repository.GetForCapacityCalculationAsync(
                 parameters.PeriodStartDate,
                 parameters.PeriodEndDate,
+                null,
                 null,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Assignment>

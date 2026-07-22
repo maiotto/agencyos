@@ -65,6 +65,7 @@ public class DeliveryStrategyEvaluatorService : IDeliveryStrategyEvaluatorServic
             }
 
             var operationalData = await LoadOperationalDataAsync(
+                request.MissionId,
                 request.PeriodStartDate,
                 request.PeriodEndDate,
                 cancellationToken);
@@ -117,6 +118,7 @@ public class DeliveryStrategyEvaluatorService : IDeliveryStrategyEvaluatorServic
     }
 
     private async Task<OperationalEvaluationData> LoadOperationalDataAsync(
+        Guid missionId,
         DateOnly periodStartDate,
         DateOnly periodEndDate,
         CancellationToken cancellationToken)
@@ -124,22 +126,26 @@ public class DeliveryStrategyEvaluatorService : IDeliveryStrategyEvaluatorServic
         var capacityParameters = new CapacityQueryParameters
         {
             PeriodStartDate = periodStartDate,
-            PeriodEndDate = periodEndDate
+            PeriodEndDate = periodEndDate,
+            ExcludeMissionId = missionId
         };
         var workloadParameters = new WorkloadQueryParameters
         {
             PeriodStartDate = periodStartDate,
-            PeriodEndDate = periodEndDate
+            PeriodEndDate = periodEndDate,
+            ExcludeMissionId = missionId
         };
         var availabilityParameters = new AvailabilityQueryParameters
         {
             PeriodStartDate = periodStartDate,
-            PeriodEndDate = periodEndDate
+            PeriodEndDate = periodEndDate,
+            ExcludeMissionId = missionId
         };
         var conflictParameters = new AllocationConflictQueryParameters
         {
             PeriodStartDate = periodStartDate,
-            PeriodEndDate = periodEndDate
+            PeriodEndDate = periodEndDate,
+            ExcludeMissionId = missionId
         };
 
         var capacities = await _capacityCalculatorService.GetAllAsync(capacityParameters, cancellationToken);

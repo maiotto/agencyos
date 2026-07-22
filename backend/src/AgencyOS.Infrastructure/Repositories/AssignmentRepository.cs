@@ -112,6 +112,7 @@ public class AssignmentRepository : IAssignmentRepository
         DateOnly periodStartDate,
         DateOnly periodEndDate,
         Guid? executionResourceId = null,
+        Guid? excludeMissionId = null,
         CancellationToken cancellationToken = default)
     {
         var query = _context.Assignments
@@ -125,6 +126,13 @@ public class AssignmentRepository : IAssignmentRepository
         if (executionResourceId.HasValue)
         {
             query = query.Where(a => a.ExecutionResourceId == executionResourceId.Value);
+        }
+
+        if (excludeMissionId.HasValue)
+        {
+            var missionId = excludeMissionId.Value;
+            query = query.Where(a =>
+                !_context.MissionTasks.Any(t => t.Id == a.TaskId && t.MissionId == missionId));
         }
 
         return await query.ToListAsync(cancellationToken);

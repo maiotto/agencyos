@@ -19,5 +19,6 @@ public interface IAssignmentRepository
         DateOnly periodStartDate,
         DateOnly periodEndDate,
         Guid? executionResourceId = null,
+        Guid? excludeMissionId = null,
         CancellationToken cancellationToken = default);
 }

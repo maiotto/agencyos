@@ -548,3 +548,37 @@ Manual database inserts are no longer required for MVP operational journeys.
 See `supabase/seed.sql` and Program Architecture – Seed Data layer.
 
 ---
+
+## DEC-009-002
+
+**Title**
+
+Delivery Strategy Builder Diagnostic Instrumentation
+
+**Date**
+
+2026-07-22
+
+**Status**
+
+Accepted
+
+**Context**
+
+Sprint 9 MVP validation observed cases where Delivery Strategy Builder produced zero strategies. Without structured diagnostics inside generation, it was not possible to identify whether failure occurred at policy filtering, task assignment, or operational validation.
+
+**Decision**
+
+Instrument `DeliveryStrategyBuilderService.GenerateStrategiesAsync()` with structured diagnostic logging only.
+
+Logging covers generation inputs, resource-mix validity (including rejection reasons), assignment completeness, operational validation inputs and failure reasons, successful strategy creation, and end-of-run counters.
+
+No algorithms, domain rules, repositories, DTOs, or controllers are modified.
+
+**Consequences**
+
+Zero-strategy outcomes can be diagnosed from application logs without changing Decision Engine behavior.
+
+Diagnostic reason helpers mirror existing validation checks for logging clarity and must not become alternate execution paths.
+
+---

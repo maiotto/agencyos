@@ -48,6 +48,7 @@ public class CapacityCalculatorServiceTests
                 parameters.PeriodStartDate,
                 parameters.PeriodEndDate,
                 null,
+                null,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Assignment>
             {
@@ -65,6 +66,54 @@ public class CapacityCalculatorServiceTests
         Assert.Equal(30m, result[0].AvailableHours);
         Assert.Equal(30m, result[0].RemainingCapacityHours);
         Assert.Equal(25m, result[0].UtilizationPercentage);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ForwardsExcludeMissionIdToAssignmentRepository()
+    {
+        var resourceId = Guid.NewGuid();
+        var missionId = Guid.NewGuid();
+        var parameters = new CapacityQueryParameters
+        {
+            PeriodStartDate = new DateOnly(2026, 7, 1),
+            PeriodEndDate = new DateOnly(2026, 7, 7),
+            ExcludeMissionId = missionId
+        };
+
+        _executionResourceRepository
+            .Setup(repository => repository.GetAllAsync(
+                It.IsAny<ExecutionResourceQueryParameters>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ExecutionResource>
+            {
+                CreateResource(resourceId, "RES-001", 16m)
+            });
+
+        _assignmentRepository
+            .Setup(repository => repository.GetForCapacityCalculationAsync(
+                parameters.PeriodStartDate,
+                parameters.PeriodEndDate,
+                null,
+                missionId,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<Assignment>());
+
+        var service = CreateService();
+        var result = await service.GetAllAsync(parameters);
+
+        Assert.Single(result);
+        Assert.Equal(16m, result[0].TotalCapacityHours);
+        Assert.Equal(0m, result[0].AllocatedHours);
+        Assert.Equal(16m, result[0].AvailableHours);
+
+        _assignmentRepository.Verify(
+            repository => repository.GetForCapacityCalculationAsync(
+                parameters.PeriodStartDate,
+                parameters.PeriodEndDate,
+                null,
+                missionId,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -112,6 +161,7 @@ public class CapacityCalculatorServiceTests
             .Setup(repository => repository.GetForCapacityCalculationAsync(
                 parameters.PeriodStartDate,
                 parameters.PeriodEndDate,
+                null,
                 null,
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Assignment>

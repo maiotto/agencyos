@@ -40,6 +40,7 @@ public class CapacityCalculatorService : ICapacityCalculatorService
             var assignments = await _assignmentRepository.GetForCapacityCalculationAsync(
                 parameters.PeriodStartDate,
                 parameters.PeriodEndDate,
+                excludeMissionId: parameters.ExcludeMissionId,
                 cancellationToken: cancellationToken);
 
             var allocatedHoursByResource = GroupAllocatedHours(assignments);
@@ -98,8 +99,9 @@ public class CapacityCalculatorService : ICapacityCalculatorService
             var assignments = await _assignmentRepository.GetForCapacityCalculationAsync(
                 parameters.PeriodStartDate,
                 parameters.PeriodEndDate,
-                resourceId,
-                cancellationToken);
+                executionResourceId: resourceId,
+                excludeMissionId: parameters.ExcludeMissionId,
+                cancellationToken: cancellationToken);
 
             var periodDays = CapacityCalculation.GetInclusivePeriodDays(
                 parameters.PeriodStartDate,

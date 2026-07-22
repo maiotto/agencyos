@@ -232,7 +232,8 @@ public class AvailabilityEngineService : IAvailabilityEngineService
         return new CapacityQueryParameters
         {
             PeriodStartDate = parameters.PeriodStartDate,
-            PeriodEndDate = parameters.PeriodEndDate
+            PeriodEndDate = parameters.PeriodEndDate,
+            ExcludeMissionId = parameters.ExcludeMissionId
         };
     }
 
@@ -241,7 +242,8 @@ public class AvailabilityEngineService : IAvailabilityEngineService
         return new WorkloadQueryParameters
         {
             PeriodStartDate = parameters.PeriodStartDate,
-            PeriodEndDate = parameters.PeriodEndDate
+            PeriodEndDate = parameters.PeriodEndDate,
+            ExcludeMissionId = parameters.ExcludeMissionId
         };
     }
 }
