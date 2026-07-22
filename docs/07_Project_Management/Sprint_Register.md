@@ -516,3 +516,28 @@ Stabilization & MVP Validation
 ## Status
 
 📋 Planned
+
+## Work Packages
+
+### WP-003 – Seed Data Foundation
+
+**Status:** ✅ Completed
+
+**Date:** 2026-07-22
+
+**Objective**
+
+Establish deterministic reference data initialization so local environments are fully operational after `supabase db reset`.
+
+**Deliverables**
+
+- `supabase/seed.sql` with deterministic UUIDs for all reference tables
+- Reference data for `mission_type`, `mission_status`, `task_type` and `task_status`
+- Seed Data layer documented in Program Architecture
+- Architectural decision registered in Decision Log
+
+**Validation**
+
+- `supabase db reset` applies migrations and seed successfully
+- Reference tables populated with stable IDs across resets
+- Mission and Task creation unblocked without manual database inserts

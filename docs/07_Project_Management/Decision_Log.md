@@ -510,3 +510,41 @@ Engineering intelligence becomes a governed evolution path rather than an ad-hoc
 No analytics infrastructure is implemented during Sprint 8.
 
 ---
+
+# Sprint 9 Decisions
+
+## DEC-009-001
+
+**Title**
+
+Deterministic Reference Data via seed.sql
+
+**Date**
+
+2026-07-22
+
+**Status**
+
+Accepted
+
+**Context**
+
+Sprint 9 MVP validation identified that `supabase db reset` recreates schema through migrations but leaves lookup tables empty. Mission and Task creation require reference data that was previously inserted manually.
+
+**Decision**
+
+Initialize all reference data through `supabase/seed.sql` executed automatically after migrations during `supabase db reset`.
+
+All seed records use deterministic UUIDs and fixed timestamps so every reset produces identical reference data.
+
+**Consequences**
+
+Local development environments are fully usable immediately after reset.
+
+Reference data changes are version-controlled alongside migrations.
+
+Manual database inserts are no longer required for MVP operational journeys.
+
+See `supabase/seed.sql` and Program Architecture – Seed Data layer.
+
+---

@@ -334,6 +334,33 @@ Entity Framework migrations are not permitted.
 
 ---
 
+## Seed Data Layer
+
+Reference data for lookup tables is initialized through `supabase/seed.sql`.
+
+Supabase executes the seed file automatically after migrations when `supabase db reset` runs (`config.toml` → `[db.seed]`).
+
+### Governed Tables
+
+| Table | Purpose |
+|-------|---------|
+| mission_type | Mission classification (Content Production, Marketing Campaign, etc.) |
+| mission_status | Mission lifecycle states (Draft, Planned, In Progress, etc.) |
+| task_type | Task classification (Production, Editing, Review, etc.) |
+| task_status | Task lifecycle states aligned with `MissionTaskStatus` domain constants |
+
+### Deterministic Identifiers
+
+Seed records use fixed UUIDs under a documented namespace scheme. The same IDs are recreated on every reset.
+
+Random UUID generation is not permitted in seed data.
+
+See DEC-009-001 and `supabase/seed.sql`.
+
+Transactional entities (Lead, Client, Mission, Task, etc.) are not seeded. They are created through application APIs during operational use.
+
+---
+
 # Program B – AgencyOS AI Factory
 
 ## Vision

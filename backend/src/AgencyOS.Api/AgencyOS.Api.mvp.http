@@ -1,0 +1,252 @@
+@AgencyOS.Api_HostAddress = http://localhost:5188
+
+# MVP Bootstrap — run sequentially after `supabase db reset`.
+# Reference lookup IDs come from supabase/seed.sql; copy transactional IDs from each response into the variables below.
+
+@leadId=
+@clientId=
+@contactId=
+@contractId=
+@missionId=
+@taskId=
+@executionResourceId=
+@assignmentId=
+@strategyId=
+
+@assignedUserId=00000000-0000-0000-0000-000000000001
+@missionTypeId=11111111-1111-4111-8111-000000000002
+@missionStatusId=11111111-1111-4111-8121-000000000002
+@taskTypeId=11111111-1111-4111-8131-000000000001
+@taskStatusId=11111111-1111-4111-8141-000000000002
+@periodStartDate=2026-07-01
+@periodEndDate=2026-07-31
+@companyDecisionProfileId=11111111-1111-1111-1111-111111111106
+
+# ### Commercial Journey
+
+# Create Lead
+# Copy the response `id` into @leadId before continuing.
+POST {{AgencyOS.Api_HostAddress}}/leads
+Content-Type: application/json
+
+{
+  "companyName": "MVP Bootstrap Co.",
+  "leadName": "Alex Rivera",
+  "email": "alex.rivera@mvpbootstrap.com",
+  "phone": "+1-555-1000",
+  "source": "Referral",
+  "status": "Prospect",
+  "estimatedContractValue": 85000.00,
+  "assignedUserId": "{{assignedUserId}}",
+  "website": "https://mvpbootstrap.com",
+  "segment": "Technology",
+  "notes": "MVP bootstrap lead — created after db reset"
+}
+
+###
+
+# Convert Lead
+# Copy the response `clientId` into @clientId before continuing.
+POST {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}/convert
+Accept: application/json
+
+###
+
+# Create Contact
+# Copy the response `id` into @contactId before continuing.
+POST {{AgencyOS.Api_HostAddress}}/contacts
+Content-Type: application/json
+
+{
+  "clientId": "{{clientId}}",
+  "firstName": "Alex",
+  "lastName": "Rivera",
+  "jobTitle": "Head of Operations",
+  "email": "alex.rivera@mvpbootstrap.com",
+  "phone": "+1-555-1001",
+  "mobile": "+1-555-1002",
+  "isPrimaryContact": true,
+  "status": "Active"
+}
+
+###
+
+# Create Contract
+# Copy the response `id` into @contractId before continuing.
+POST {{AgencyOS.Api_HostAddress}}/contracts
+Content-Type: application/json
+
+{
+  "clientId": "{{clientId}}",
+  "contractCode": "MVP-CTR-001",
+  "contractName": "MVP Bootstrap Engagement",
+  "contractType": "Fixed Price",
+  "status": "Draft",
+  "estimatedValue": 85000.00,
+  "startDate": "2026-07-01",
+  "endDate": "2026-12-31"
+}
+
+###
+
+# Activate Contract
+PATCH {{AgencyOS.Api_HostAddress}}/contracts/{{contractId}}/activate
+Accept: application/json
+
+###
+
+# ### Operational Journey
+
+# Create Mission
+# Uses @contractId as clientContractId. Copy the response `id` into @missionId before continuing.
+POST {{AgencyOS.Api_HostAddress}}/missions
+Content-Type: application/json
+
+{
+  "clientContractId": "{{contractId}}",
+  "code": "MVP-MSN-001",
+  "name": "MVP Bootstrap Mission",
+  "description": "Primary delivery mission for MVP validation",
+  "missionTypeId": "{{missionTypeId}}",
+  "missionStatusId": "{{missionStatusId}}",
+  "priority": "NORMAL",
+  "startDate": "2026-07-01",
+  "endDate": "2026-12-31"
+}
+
+###
+
+# Create Task
+# Copy the response `id` into @taskId before continuing.
+POST {{AgencyOS.Api_HostAddress}}/tasks
+Content-Type: application/json
+
+{
+  "missionId": "{{missionId}}",
+  "code": "MVP-TSK-001",
+  "name": "Bootstrap Production Task",
+  "description": "Initial production task for MVP operational validation",
+  "taskTypeId": "{{taskTypeId}}",
+  "taskStatusId": "{{taskStatusId}}",
+  "priority": "High",
+  "estimatedHours": 24.0,
+  "plannedStartDate": "2026-07-01",
+  "plannedEndDate": "2026-07-15"
+}
+
+###
+
+# Create Execution Resource
+# Copy the response `id` into @executionResourceId before continuing.
+POST {{AgencyOS.Api_HostAddress}}/execution-resources
+Content-Type: application/json
+
+{
+  "code": "MVP-RES-001",
+  "name": "MVP Production Specialist",
+  "resourceType": "Internal Human",
+  "status": "Active",
+  "capacityHoursPerWeek": 40.0,
+  "costRate": 95.00,
+  "currency": "USD",
+  "skills": ["Production", "Editing", "Review"],
+  "availability": "Monday to Friday, 9am to 6pm",
+  "notes": "Bootstrap execution resource for MVP validation"
+}
+
+###
+
+# Create Assignment
+# Copy the response `id` into @assignmentId if needed for follow-up requests.
+POST {{AgencyOS.Api_HostAddress}}/assignments
+Content-Type: application/json
+
+{
+  "taskId": "{{taskId}}",
+  "executionResourceId": "{{executionResourceId}}",
+  "assignmentRole": "Responsible",
+  "plannedHours": 24.0,
+  "plannedStartDate": "2026-07-01",
+  "plannedEndDate": "2026-07-15",
+  "allocationPercentage": 60,
+  "status": "Planned",
+  "notes": "Bootstrap assignment linking task and execution resource"
+}
+
+###
+
+# ### Analytics Journey
+
+# Capacity
+GET {{AgencyOS.Api_HostAddress}}/capacity?periodStartDate={{periodStartDate}}&periodEndDate={{periodEndDate}}
+Accept: application/json
+
+###
+
+# Workload
+GET {{AgencyOS.Api_HostAddress}}/workload?periodStartDate={{periodStartDate}}&periodEndDate={{periodEndDate}}
+Accept: application/json
+
+###
+
+# Availability
+GET {{AgencyOS.Api_HostAddress}}/availability?periodStartDate={{periodStartDate}}&periodEndDate={{periodEndDate}}
+Accept: application/json
+
+###
+
+# Allocation Conflict
+GET {{AgencyOS.Api_HostAddress}}/allocation-conflicts?periodStartDate={{periodStartDate}}&periodEndDate={{periodEndDate}}
+Accept: application/json
+
+###
+
+# ### Decision Engine
+
+# Build
+# Copy a `strategyId` from response `strategies[0].strategyId` into @strategyId before Explain.
+POST {{AgencyOS.Api_HostAddress}}/delivery-strategies/build
+Content-Type: application/json
+
+{
+  "contractId": "{{contractId}}",
+  "missionId": "{{missionId}}",
+  "periodStartDate": "{{periodStartDate}}",
+  "periodEndDate": "{{periodEndDate}}"
+}
+
+###
+
+# Evaluate
+POST {{AgencyOS.Api_HostAddress}}/delivery-strategies/evaluate
+Content-Type: application/json
+
+{
+  "contractId": "{{contractId}}",
+  "missionId": "{{missionId}}",
+  "periodStartDate": "{{periodStartDate}}",
+  "periodEndDate": "{{periodEndDate}}"
+}
+
+###
+
+# Rank
+# Optionally copy `rankedStrategies[0].evaluatedStrategy.strategy.strategyId` into @strategyId for Explain.
+POST {{AgencyOS.Api_HostAddress}}/delivery-strategies/rank
+Content-Type: application/json
+
+{
+  "contractId": "{{contractId}}",
+  "missionId": "{{missionId}}",
+  "periodStartDate": "{{periodStartDate}}",
+  "periodEndDate": "{{periodEndDate}}",
+  "companyDecisionProfileId": "{{companyDecisionProfileId}}"
+}
+
+###
+
+# Explain
+GET {{AgencyOS.Api_HostAddress}}/delivery-strategies/{{strategyId}}/explanation?contractId={{contractId}}&missionId={{missionId}}&periodStartDate={{periodStartDate}}&periodEndDate={{periodEndDate}}&companyDecisionProfileId={{companyDecisionProfileId}}
+Accept: application/json
+
+###
