@@ -28,7 +28,7 @@ public class ContactService : IContactService
     {
         var (items, totalCount) = await _contactRepository.GetPagedAsync(parameters, cancellationToken);
 
-        var pageSize = Math.Max(1, parameters.PageSize);
+        var pageSize = Math.Clamp(parameters.PageSize, 1, 100);
         var page = Math.Max(1, parameters.Page);
 
         return new PagedResponse<ContactResponse>

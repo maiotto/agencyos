@@ -29,5 +29,6 @@ public interface ILeadRepository
     Task<Client> ConvertLeadAsync(
         Lead lead,
         Client client,
+        IReadOnlyCollection<ClientContact> clientContacts,
         CancellationToken cancellationToken = default);
 }

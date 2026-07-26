@@ -57,6 +57,12 @@ public class LeadService : ILeadService
 
     public async Task<LeadResponse> CreateAsync(CreateLeadRequest request, CancellationToken cancellationToken = default)
     {
+        if (!string.Equals(request.Status, LeadStatus.Prospect, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new BusinessRuleException(
+                $"New Leads must be created with status '{LeadStatus.Prospect}'.");
+        }
+
         await EnsureEmailIsUniqueAsync(request.Email, null, cancellationToken);
 
         var now = DateTimeOffset.UtcNow;
@@ -102,7 +108,7 @@ public class LeadService : ILeadService
         var lead = await GetLeadOrThrowAsync(id, cancellationToken);
 
         EnsureLeadCanBeEdited(lead);
-        ValidateStatusTransition(lead.Status, request.Status);
+        EnsureValidStatusTransition(lead.Status, request.Status);
         await EnsureEmailIsUniqueAsync(request.Email, id, cancellationToken);
 
         lead.CompanyName = request.CompanyName;
@@ -130,6 +136,11 @@ public class LeadService : ILeadService
     {
         var lead = await GetLeadOrThrowAsync(id, cancellationToken);
 
+        if (string.Equals(lead.Status, LeadStatus.Converted, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new BusinessRuleException("Converted Leads cannot be archived.");
+        }
+
         if (string.Equals(lead.Status, LeadStatus.Archived, StringComparison.OrdinalIgnoreCase))
         {
             return;
@@ -143,13 +154,16 @@ public class LeadService : ILeadService
         _logger.LogInformation("Lead Archived: {LeadId} ({LeadCode})", lead.Id, lead.Code);
     }
 
-    public async Task<ConvertLeadResponse> ConvertAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<ConvertLeadResponse> ConvertAsync(
+        Guid id,
+        ConvertLeadRequest request,
+        CancellationToken cancellationToken = default)
     {
         var lead = await GetLeadOrThrowAsync(id, cancellationToken);
 
-        if (!LeadStatus.Convertible.Contains(lead.Status))
+        if (!string.Equals(lead.Status, LeadStatus.Won, StringComparison.OrdinalIgnoreCase))
         {
-            throw new BusinessRuleException("Only active Leads can be converted.");
+            throw new BusinessRuleException("Only Leads in status Won can be converted.");
         }
 
         var existingClientId = await _leadRepository.GetClientIdByLeadIdAsync(id, cancellationToken);
@@ -164,12 +178,13 @@ public class LeadService : ILeadService
         {
             Id = Guid.NewGuid(),
             LeadId = lead.Id,
-            LegalName = lead.CompanyName,
-            TradeName = lead.TradeName,
-            Website = lead.Website,
+            LegalName = request.LegalName.Trim(),
+            TradeName = string.IsNullOrWhiteSpace(request.TradeName) ? lead.TradeName : request.TradeName.Trim(),
+            TaxId = request.TaxIdentifier.Trim(),
+            Website = string.IsNullOrWhiteSpace(request.Website) ? lead.Website : request.Website.Trim(),
             Segment = lead.Segment,
             Status = ClientStatusActive,
-            AccountOwner = lead.OwnerId,
+            AccountOwner = request.AccountOwner ?? lead.OwnerId,
             CreatedAt = now,
             UpdatedAt = now
         };
@@ -177,7 +192,18 @@ public class LeadService : ILeadService
         lead.Status = LeadStatus.Converted;
         lead.UpdatedAt = now;
 
-        await _leadRepository.ConvertLeadAsync(lead, client, cancellationToken);
+        ApplyPrimaryContactRulesForConversion(lead.LeadContacts, now);
+
+        var clientContacts = lead.LeadContacts
+            .Select(link => new ClientContact
+            {
+                ClientId = client.Id,
+                ContactId = link.ContactId,
+                CreatedAt = now
+            })
+            .ToList();
+
+        await _leadRepository.ConvertLeadAsync(lead, client, clientContacts, cancellationToken);
 
         _logger.LogInformation(
             "Lead Converted: {LeadId} ({LeadCode}) to Client {ClientId}",
@@ -190,6 +216,47 @@ public class LeadService : ILeadService
             Lead = MapToResponse(lead, client.Id),
             ClientId = client.Id
         };
+    }
+
+    private static void ApplyPrimaryContactRulesForConversion(
+        ICollection<LeadContact> leadContacts,
+        DateTimeOffset now)
+    {
+        var primaryAssigned = false;
+
+        foreach (var link in leadContacts)
+        {
+            var contact = link.Contact;
+            if (contact is null)
+            {
+                continue;
+            }
+
+            if (ContactInactiveState.IsInactive(contact))
+            {
+                if (contact.IsPrimary)
+                {
+                    contact.IsPrimary = false;
+                    contact.UpdatedAt = now;
+                }
+
+                continue;
+            }
+
+            if (!contact.IsPrimary)
+            {
+                continue;
+            }
+
+            if (primaryAssigned)
+            {
+                contact.IsPrimary = false;
+                contact.UpdatedAt = now;
+                continue;
+            }
+
+            primaryAssigned = true;
+        }
     }
 
     private async Task<Lead> GetLeadOrThrowAsync(Guid id, CancellationToken cancellationToken)
@@ -215,14 +282,19 @@ public class LeadService : ILeadService
         {
             throw new BusinessRuleException("Converted Leads cannot be edited.");
         }
+
+        if (string.Equals(lead.Status, LeadStatus.Lost, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new BusinessRuleException("Lost Leads cannot be edited.");
+        }
     }
 
-    private static void ValidateStatusTransition(string currentStatus, string newStatus)
+    private static void EnsureValidStatusTransition(string currentStatus, string newStatus)
     {
-        if (string.Equals(currentStatus, LeadStatus.Converted, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(newStatus, LeadStatus.Prospect, StringComparison.OrdinalIgnoreCase))
+        if (!LeadStatus.CanTransition(currentStatus, newStatus))
         {
-            throw new BusinessRuleException("Converted Leads cannot return to Prospect.");
+            throw new BusinessRuleException(
+                $"Invalid Lead status transition from '{currentStatus}' to '{newStatus}'.");
         }
     }
 

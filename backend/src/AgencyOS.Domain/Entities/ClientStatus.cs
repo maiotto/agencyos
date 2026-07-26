@@ -11,4 +11,22 @@ public static class ClientStatus
             Active,
             Inactive
         };
+
+    /// <summary>
+    /// Returns the canonical ClientStatus constant for a valid status value.
+    /// </summary>
+    public static string Normalize(string status)
+    {
+        if (string.Equals(status, Active, StringComparison.OrdinalIgnoreCase))
+        {
+            return Active;
+        }
+
+        if (string.Equals(status, Inactive, StringComparison.OrdinalIgnoreCase))
+        {
+            return Inactive;
+        }
+
+        throw new ArgumentOutOfRangeException(nameof(status), status, "Status must be a valid Client status.");
+    }
 }

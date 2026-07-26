@@ -28,7 +28,7 @@ public class ClientContractService : IClientContractService
     {
         var (items, totalCount) = await _contractRepository.GetPagedAsync(parameters, cancellationToken);
 
-        var pageSize = Math.Max(1, parameters.PageSize);
+        var pageSize = Math.Clamp(parameters.PageSize, 1, 100);
         var page = Math.Max(1, parameters.Page);
 
         return new PagedResponse<ContractResponse>
@@ -65,7 +65,7 @@ public class ClientContractService : IClientContractService
             Name = request.ContractName.Trim(),
             BillingModel = request.ContractType,
             Value = request.EstimatedValue,
-            Status = request.Status,
+            Status = ContractStatus.Draft,
             StartDate = request.StartDate,
             EndDate = request.EndDate,
             RenewalDate = request.RenewalDate,

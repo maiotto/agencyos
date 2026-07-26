@@ -26,8 +26,8 @@ public class CreateContractRequestValidator : AbstractValidator<CreateContractRe
 
         RuleFor(x => x.Status)
             .NotEmpty()
-            .Must(status => ContractStatus.All.Contains(status))
-            .WithMessage("Status must be a valid Contract status.");
+            .Must(status => string.Equals(status, ContractStatus.Draft, StringComparison.OrdinalIgnoreCase))
+            .WithMessage("Status must be Draft when creating a Contract.");
 
         RuleFor(x => x.EstimatedValue)
             .GreaterThan(0);

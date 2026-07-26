@@ -46,9 +46,69 @@ Content-Type: application/json
 ###
 
 # Convert Lead
-# Copy the response `clientId` into @clientId before continuing.
+# Lead must be in status Won. Copy the response `clientId` into @clientId before continuing.
 POST {{host}}/leads/{{leadId}}/convert
+Content-Type: application/json
+
+{
+  "legalName": "MVP Bootstrap Co.",
+  "taxIdentifier": "98.765.432/0001-10",
+  "tradeName": "MVP Bootstrap",
+  "website": "https://mvpbootstrap.com",
+  "accountOwner": "{{assignedUserId}}"
+}
+
+###
+
+# ### Client Management
+
+# List Clients
+GET {{host}}/clients?page=1&pageSize=20
 Accept: application/json
+
+###
+
+# Create Client
+# Optional direct create path. Copy the response `id` into @clientId if not set by Lead convert.
+POST {{host}}/clients
+Content-Type: application/json
+
+{
+  "legalName": "MVP Bootstrap Co.",
+  "tradeName": "MVP Bootstrap",
+  "taxIdentifier": "98.765.432/0001-10",
+  "website": "https://mvpbootstrap.com",
+  "industry": "Technology",
+  "status": "Active",
+  "accountOwner": "{{assignedUserId}}"
+}
+
+###
+
+# Get Client
+GET {{host}}/clients/{{clientId}}
+Accept: application/json
+
+###
+
+# Update Client
+PUT {{host}}/clients/{{clientId}}
+Content-Type: application/json
+
+{
+  "legalName": "MVP Bootstrap Co.",
+  "tradeName": "MVP Bootstrap",
+  "taxIdentifier": "98.765.432/0001-10",
+  "website": "https://mvpbootstrap.com",
+  "industry": "Technology",
+  "status": "Active",
+  "accountOwner": "{{assignedUserId}}"
+}
+
+###
+
+# Deactivate Client
+DELETE {{host}}/clients/{{clientId}}
 
 ###
 

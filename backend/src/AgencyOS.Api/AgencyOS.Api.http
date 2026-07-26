@@ -106,7 +106,15 @@ DELETE {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}
 ###
 
 POST {{AgencyOS.Api_HostAddress}}/leads/{{leadId}}/convert
-Accept: application/json
+Content-Type: application/json
+
+{
+  "legalName": "Acme Corporation Ltd",
+  "taxIdentifier": "12.345.678/0001-90",
+  "tradeName": "Acme",
+  "website": "https://acme.example",
+  "accountOwner": "00000000-0000-0000-0000-000000000001"
+}
 
 ###
 

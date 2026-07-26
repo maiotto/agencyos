@@ -35,27 +35,42 @@ public class ContactRepository : IContactRepository
             query = query.Where(cc => cc.Contact.IsPrimary == parameters.IsPrimaryContact.Value);
         }
 
-        var links = await query.ToListAsync(cancellationToken);
-
         if (!string.IsNullOrWhiteSpace(parameters.Status))
         {
-            links = links
-                .Where(link => ContactInactiveState.MatchesStatusFilter(link.Contact, parameters.Status))
-                .ToList();
+            var status = parameters.Status.Trim();
+            if (string.Equals(status, ContactStatus.Inactive, StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(cc =>
+                    cc.Contact.Mobile != null
+                    && (cc.Contact.Mobile == "__INACTIVE__"
+                        || cc.Contact.Mobile.StartsWith("__I|")));
+            }
+            else if (string.Equals(status, ContactStatus.Active, StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(cc =>
+                    cc.Contact.Mobile == null
+                    || (cc.Contact.Mobile != "__INACTIVE__"
+                        && !cc.Contact.Mobile.StartsWith("__I|")));
+            }
         }
 
-        var totalCount = links.Count;
+        var totalCount = await query.CountAsync(cancellationToken);
 
         var page = Math.Max(1, parameters.Page);
         var pageSize = Math.Clamp(parameters.PageSize, 1, 100);
 
-        var ordered = ApplyOrdering(links, parameters)
+        var ordered = ApplyOrdering(query, parameters);
+
+        var links = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        var items = links
             .Select(link => (link.Contact, link.ClientId))
             .ToList();
 
-        return (ordered, totalCount);
+        return (items, totalCount);
     }
 
     public async Task<(Contact Contact, Guid ClientId)?> GetClientContactByIdAsync(
@@ -80,11 +95,13 @@ public class ContactRepository : IContactRepository
         Guid? excludeContactId = null,
         CancellationToken cancellationToken = default)
     {
-        var normalizedEmail = email.Trim();
+        var normalizedEmail = email.Trim().ToLowerInvariant();
 
         var query = _context.ClientContacts
             .AsNoTracking()
-            .Where(cc => cc.ClientId == clientId && cc.Contact.Email == normalizedEmail);
+            .Where(cc => cc.ClientId == clientId
+                && cc.Contact.Email != null
+                && cc.Contact.Email.ToLower() == normalizedEmail);
 
         if (excludeContactId.HasValue)
         {
@@ -140,8 +157,8 @@ public class ContactRepository : IContactRepository
         }
     }
 
-    private static IEnumerable<ClientContact> ApplyOrdering(
-        IEnumerable<ClientContact> links,
+    private static IQueryable<ClientContact> ApplyOrdering(
+        IQueryable<ClientContact> links,
         ContactQueryParameters parameters)
     {
         var descending = string.Equals(parameters.OrderDirection, "desc", StringComparison.OrdinalIgnoreCase);

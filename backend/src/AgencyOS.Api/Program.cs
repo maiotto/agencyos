@@ -1,4 +1,5 @@
 using AgencyOS.Application;
+using AgencyOS.Api.Swagger;
 using AgencyOS.Infrastructure;
 using AgencyOS.Shared.Exceptions;
 using FluentValidation;
@@ -11,7 +12,24 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new() { Title = "AgencyOS API", Version = "v1" });
+    options.SwaggerDoc("v1", new()
+    {
+        Title = "AgencyOS API",
+        Version = "v1",
+        Description = "AgencyOS MVP 1.0 REST API"
+    });
+
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+    }
+
+    options.OperationFilter<LeadOpenApiOperationFilter>();
+    options.OperationFilter<ClientOpenApiOperationFilter>();
+    options.OperationFilter<ContactOpenApiOperationFilter>();
+    options.OperationFilter<ContractOpenApiOperationFilter>();
 });
 
 builder.Services.AddFluentValidationAutoValidation();
@@ -21,6 +39,33 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddProblemDetails();
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var logger = context.HttpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("AgencyOS.Validation");
+
+        var errors = context.ModelState
+            .Where(entry => entry.Value is { Errors.Count: > 0 })
+            .SelectMany(entry => entry.Value!.Errors.Select(error =>
+                $"{entry.Key}: {error.ErrorMessage}"))
+            .ToArray();
+
+        logger.LogWarning(
+            "Validation failure for {Method} {Path}. Errors: {Errors}",
+            context.HttpContext.Request.Method,
+            context.HttpContext.Request.Path.Value,
+            errors);
+
+        return new BadRequestObjectResult(new ValidationProblemDetails(context.ModelState)
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "One or more validation errors occurred."
+        });
+    };
+});
 
 var app = builder.Build();
 
@@ -29,9 +74,18 @@ app.UseExceptionHandler(exceptionHandlerApp =>
     exceptionHandlerApp.Run(async context =>
     {
         var exception = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>()?.Error;
+        var logger = context.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("AgencyOS.ExceptionHandler");
 
         if (exception is NotFoundException notFoundException)
         {
+            logger.LogWarning(
+                notFoundException,
+                "Resource not found for {Method} {Path}",
+                context.Request.Method,
+                context.Request.Path.Value);
+
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             context.Response.ContentType = "application/problem+json";
 
@@ -48,6 +102,13 @@ app.UseExceptionHandler(exceptionHandlerApp =>
 
         if (exception is ConflictException conflictException)
         {
+            logger.LogWarning(
+                conflictException,
+                "Conflict for {Method} {Path}: {Message}",
+                context.Request.Method,
+                context.Request.Path.Value,
+                conflictException.Message);
+
             context.Response.StatusCode = StatusCodes.Status409Conflict;
             context.Response.ContentType = "application/problem+json";
 
@@ -64,6 +125,13 @@ app.UseExceptionHandler(exceptionHandlerApp =>
 
         if (exception is BusinessRuleException businessRuleException)
         {
+            logger.LogWarning(
+                businessRuleException,
+                "Business rule violation for {Method} {Path}: {Message}",
+                context.Request.Method,
+                context.Request.Path.Value,
+                businessRuleException.Message);
+
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             context.Response.ContentType = "application/problem+json";
 
@@ -77,6 +145,12 @@ app.UseExceptionHandler(exceptionHandlerApp =>
             await context.Response.WriteAsJsonAsync(problemDetails);
             return;
         }
+
+        logger.LogError(
+            exception,
+            "Unexpected exception for {Method} {Path}",
+            context.Request.Method,
+            context.Request.Path.Value);
 
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         context.Response.ContentType = "application/problem+json";
@@ -101,3 +175,5 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program;

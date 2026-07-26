@@ -14,7 +14,7 @@ public class CreateLeadRequestValidator : AbstractValidator<CreateLeadRequest>
 
         RuleFor(x => x.LeadName)
             .NotEmpty()
-            .MaximumLength(200);
+            .MaximumLength(120);
 
         RuleFor(x => x.Source)
             .NotEmpty()

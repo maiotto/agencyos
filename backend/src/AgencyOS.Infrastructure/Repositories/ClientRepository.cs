@@ -23,12 +23,14 @@ public class ClientRepository : IClientRepository
 
         if (!string.IsNullOrWhiteSpace(parameters.Status))
         {
-            query = query.Where(c => c.Status == parameters.Status);
+            var status = parameters.Status.Trim();
+            query = query.Where(c => EF.Functions.ILike(c.Status, status));
         }
 
         if (!string.IsNullOrWhiteSpace(parameters.Industry))
         {
-            query = query.Where(c => c.Segment == parameters.Industry);
+            var industry = parameters.Industry.Trim();
+            query = query.Where(c => c.Segment != null && EF.Functions.ILike(c.Segment, industry));
         }
 
         if (!string.IsNullOrWhiteSpace(parameters.CompanyName))

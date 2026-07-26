@@ -23,8 +23,8 @@ public class ClientService : IClientService
     {
         var (items, totalCount) = await _clientRepository.GetPagedAsync(parameters, cancellationToken);
 
-        var pageSize = Math.Max(1, parameters.PageSize);
         var page = Math.Max(1, parameters.Page);
+        var pageSize = Math.Clamp(parameters.PageSize, 1, 100);
 
         return new PagedResponse<ClientResponse>
         {
@@ -58,7 +58,7 @@ public class ClientService : IClientService
             TaxId = NormalizeOptionalText(request.TaxIdentifier),
             Website = NormalizeOptionalText(request.Website),
             Segment = NormalizeOptionalText(request.Industry),
-            Status = request.Status,
+            Status = ClientStatus.Normalize(request.Status),
             AccountOwner = request.AccountOwner,
             CreatedAt = now,
             UpdatedAt = now
@@ -85,7 +85,7 @@ public class ClientService : IClientService
         client.TaxId = NormalizeOptionalText(request.TaxIdentifier);
         client.Website = NormalizeOptionalText(request.Website);
         client.Segment = NormalizeOptionalText(request.Industry);
-        client.Status = request.Status;
+        client.Status = ClientStatus.Normalize(request.Status);
         client.AccountOwner = request.AccountOwner;
         client.UpdatedAt = DateTimeOffset.UtcNow;
 

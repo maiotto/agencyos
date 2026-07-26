@@ -18,6 +18,15 @@ public class ClientConfiguration : IEntityTypeConfiguration<Client>
         builder.Property(c => c.LeadId)
             .HasColumnName("lead_id");
 
+        builder.HasIndex(c => c.LeadId)
+            .IsUnique()
+            .HasFilter("lead_id IS NOT NULL")
+            .HasDatabaseName("uq_client_lead_id");
+
+        builder.HasIndex(c => c.TaxId)
+            .IsUnique()
+            .HasDatabaseName("uq_client_tax_id");
+
         builder.Property(c => c.LegalName)
             .HasColumnName("legal_name")
             .HasMaxLength(200)

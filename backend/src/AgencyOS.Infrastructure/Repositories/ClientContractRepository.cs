@@ -31,12 +31,14 @@ public class ClientContractRepository : IClientContractRepository
 
         if (!string.IsNullOrWhiteSpace(parameters.Status))
         {
-            query = query.Where(c => c.Status == parameters.Status);
+            var status = parameters.Status.Trim();
+            query = query.Where(c => EF.Functions.ILike(c.Status, status));
         }
 
         if (!string.IsNullOrWhiteSpace(parameters.ContractType))
         {
-            query = query.Where(c => c.BillingModel == parameters.ContractType);
+            var contractType = parameters.ContractType.Trim();
+            query = query.Where(c => EF.Functions.ILike(c.BillingModel, contractType));
         }
 
         if (parameters.StartDate.HasValue)
@@ -76,11 +78,12 @@ public class ClientContractRepository : IClientContractRepository
         Guid? excludeContractId = null,
         CancellationToken cancellationToken = default)
     {
-        var normalizedContractCode = contractCode.Trim();
+        var normalizedContractCode = contractCode.Trim().ToLowerInvariant();
 
         var query = _context.ClientContracts
             .AsNoTracking()
-            .Where(c => c.ContractNumber == normalizedContractCode);
+            .Where(c => c.ContractNumber != null
+                && c.ContractNumber.ToLower() == normalizedContractCode);
 
         if (excludeContractId.HasValue)
         {

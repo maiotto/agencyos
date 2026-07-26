@@ -1,8 +1,15 @@
 namespace AgencyOS.Domain.Entities;
 
+/// <summary>
+/// Encodes Contact Active/Inactive in the Mobile column without a status field.
+/// Inactive values use a reversible prefix so the original Mobile is preserved.
+/// Legacy rows that stored only <c>__INACTIVE__</c> remain supported.
+/// </summary>
 public static class ContactInactiveState
 {
-    private const string InactiveOnlyMarker = "__INACTIVE__";
+    private const string LegacyInactiveMarker = "__INACTIVE__";
+    private const string InactivePrefix = "__I|";
+    private const int MobileMaxLength = 40;
 
     public static string GetStatus(Contact contact)
     {
@@ -11,19 +18,45 @@ public static class ContactInactiveState
 
     public static bool IsInactive(Contact contact)
     {
-        return contact.Mobile == InactiveOnlyMarker;
+        if (contact.Mobile is null)
+        {
+            return false;
+        }
+
+        return contact.Mobile == LegacyInactiveMarker
+            || contact.Mobile.StartsWith(InactivePrefix, StringComparison.Ordinal);
     }
 
     public static string? GetMobile(Contact contact)
     {
-        return IsInactive(contact) ? null : contact.Mobile;
+        if (contact.Mobile is null)
+        {
+            return null;
+        }
+
+        if (contact.Mobile == LegacyInactiveMarker)
+        {
+            return null;
+        }
+
+        if (contact.Mobile.StartsWith(InactivePrefix, StringComparison.Ordinal))
+        {
+            var preserved = contact.Mobile[InactivePrefix.Length..];
+            return string.IsNullOrEmpty(preserved) ? null : preserved;
+        }
+
+        return contact.Mobile;
     }
 
     public static void ApplyStatus(Contact contact, string status, string? mobile)
     {
         if (string.Equals(status, ContactStatus.Inactive, StringComparison.OrdinalIgnoreCase))
         {
-            contact.Mobile = InactiveOnlyMarker;
+            var toPreserve = !string.IsNullOrWhiteSpace(mobile)
+                ? NormalizeOptionalText(mobile)
+                : GetMobile(contact);
+
+            contact.Mobile = EncodeInactive(toPreserve);
             return;
         }
 
@@ -44,6 +77,19 @@ public static class ContactInactiveState
         }
 
         return string.Equals(GetStatus(contact), status.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string EncodeInactive(string? mobile)
+    {
+        var preserved = mobile ?? string.Empty;
+        var maxPreservedLength = MobileMaxLength - InactivePrefix.Length;
+
+        if (preserved.Length > maxPreservedLength)
+        {
+            preserved = preserved[..maxPreservedLength];
+        }
+
+        return InactivePrefix + preserved;
     }
 
     private static string? NormalizeOptionalText(string? value)

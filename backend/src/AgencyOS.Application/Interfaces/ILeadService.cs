@@ -16,5 +16,8 @@ public interface ILeadService
 
     Task ArchiveAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<ConvertLeadResponse> ConvertAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<ConvertLeadResponse> ConvertAsync(
+        Guid id,
+        ConvertLeadRequest request,
+        CancellationToken cancellationToken = default);
 }

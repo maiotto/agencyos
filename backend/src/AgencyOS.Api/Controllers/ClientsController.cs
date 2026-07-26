@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AgencyOS.Api.Controllers;
 
+/// <summary>
+/// Client Management API for the Commercial Domain.
+/// </summary>
 [ApiController]
 [Route("clients")]
 [Produces("application/json")]
@@ -19,6 +22,9 @@ public class ClientsController : ControllerBase
     /// <summary>
     /// Returns a paginated list of clients with optional filters and ordering.
     /// </summary>
+    /// <remarks>
+    /// Supports filtering by status, industry, and company name. Status filtering is case-insensitive.
+    /// </remarks>
     /// <response code="200">Paginated list of clients.</response>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<ClientResponse>), StatusCodes.Status200OK)]
@@ -33,6 +39,9 @@ public class ClientsController : ControllerBase
     /// <summary>
     /// Returns a client by identifier.
     /// </summary>
+    /// <remarks>
+    /// Returns the client regardless of Active or Inactive status.
+    /// </remarks>
     /// <response code="200">Client found.</response>
     /// <response code="404">Client not found.</response>
     [HttpGet("{id:guid}")]
@@ -47,6 +56,9 @@ public class ClientsController : ControllerBase
     /// <summary>
     /// Creates a new client.
     /// </summary>
+    /// <remarks>
+    /// Creates a commercial client. Status must be Active or Inactive. Tax identifier must be unique when provided.
+    /// </remarks>
     /// <response code="201">Client created.</response>
     /// <response code="400">Validation or business rule error.</response>
     /// <response code="409">Duplicate tax identifier.</response>
@@ -65,6 +77,9 @@ public class ClientsController : ControllerBase
     /// <summary>
     /// Updates an existing client.
     /// </summary>
+    /// <remarks>
+    /// Updates commercial client fields. Status must be Active or Inactive. Tax identifier must be unique when provided.
+    /// </remarks>
     /// <response code="200">Client updated.</response>
     /// <response code="400">Validation or business rule error.</response>
     /// <response code="404">Client not found.</response>
@@ -86,6 +101,9 @@ public class ClientsController : ControllerBase
     /// <summary>
     /// Deactivates a client. Historical information is preserved.
     /// </summary>
+    /// <remarks>
+    /// Sets client status to Inactive. Already inactive clients are treated as idempotent success.
+    /// </remarks>
     /// <response code="204">Client deactivated.</response>
     /// <response code="404">Client not found.</response>
     [HttpDelete("{id:guid}")]

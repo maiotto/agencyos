@@ -25,9 +25,16 @@ public class LeadRepository : ILeadRepository
             .ThenInclude(lc => lc.Contact)
             .AsQueryable();
 
+        if (!parameters.IncludeArchived
+            && !string.Equals(parameters.Status, LeadStatus.Archived, StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(l => l.Status != LeadStatus.Archived);
+        }
+
         if (!string.IsNullOrWhiteSpace(parameters.Status))
         {
-            query = query.Where(l => l.Status == parameters.Status);
+            var status = parameters.Status.Trim();
+            query = query.Where(l => EF.Functions.ILike(l.Status, status));
         }
 
         if (!string.IsNullOrWhiteSpace(parameters.Company))
@@ -126,9 +133,24 @@ public class LeadRepository : ILeadRepository
     public async Task<Client> ConvertLeadAsync(
         Lead lead,
         Client client,
+        IReadOnlyCollection<ClientContact> clientContacts,
         CancellationToken cancellationToken = default)
     {
         _context.Clients.Add(client);
+
+        foreach (var clientContact in clientContacts)
+        {
+            _context.ClientContacts.Add(clientContact);
+        }
+
+        foreach (var leadContact in lead.LeadContacts)
+        {
+            if (leadContact.Contact is not null)
+            {
+                _context.Contacts.Update(leadContact.Contact);
+            }
+        }
+
         _context.Leads.Update(lead);
         await _context.SaveChangesAsync(cancellationToken);
         return client;
