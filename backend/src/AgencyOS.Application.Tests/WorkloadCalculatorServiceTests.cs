@@ -1,5 +1,6 @@
 using AgencyOS.Application.DTOs;
 using AgencyOS.Application.Interfaces;
+using AgencyOS.Application.Mappings;
 using AgencyOS.Application.Services;
 using AgencyOS.Application.Validators;
 using AgencyOS.Domain.Entities;
@@ -13,13 +14,41 @@ public class WorkloadCalculatorServiceTests
 {
     private readonly Mock<IExecutionResourceRepository> _executionResourceRepository = new();
     private readonly Mock<IAssignmentRepository> _assignmentRepository = new();
+    private readonly Mock<IResourceAvailabilityRepository> _resourceAvailabilityRepository = new();
+    private readonly Mock<IWorkingCalendarRepository> _workingCalendarRepository = new();
+    private readonly Mock<IHolidayRepository> _holidayRepository = new();
+    private readonly Mock<IWorkloadHistoryService> _workloadHistoryService = new();
     private readonly Mock<ILogger<WorkloadCalculatorService>> _logger = new();
 
     private WorkloadCalculatorService CreateService()
     {
+        _resourceAvailabilityRepository
+            .Setup(repository => repository.GetActiveCoveringPeriodAsync(
+                It.IsAny<Guid>(),
+                It.IsAny<DateOnly>(),
+                It.IsAny<DateOnly>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<ResourceAvailability>());
+
+        _workloadHistoryService
+            .Setup(service => service.PersistCompletedCalculationAsync(
+                It.IsAny<WorkloadHistoryPersistModel>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        _workloadHistoryService
+            .Setup(service => service.PersistCompletedCalculationsAsync(
+                It.IsAny<IReadOnlyList<WorkloadHistoryPersistModel>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         return new WorkloadCalculatorService(
             _executionResourceRepository.Object,
             _assignmentRepository.Object,
+            _resourceAvailabilityRepository.Object,
+            _workingCalendarRepository.Object,
+            _holidayRepository.Object,
+            _workloadHistoryService.Object,
             _logger.Object);
     }
 
@@ -66,6 +95,55 @@ public class WorkloadCalculatorServiceTests
         Assert.Equal(10m, result[0].AverageHoursPerAssignment);
         Assert.Equal(25m, result[0].WorkloadPercentage);
         Assert.Single(result[0].AssignmentDistribution);
+
+        _workloadHistoryService.Verify(
+            service => service.PersistCompletedCalculationsAsync(
+                It.Is<IReadOnlyList<WorkloadHistoryPersistModel>>(
+                    payload => payload.Count == 1
+                        && payload[0].Workload.ExecutionResourceId == resourceId
+                        && payload[0].CompanyId == WorkloadCalculatorService.DefaultCompanyId),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task GetSummaryAsync_DoesNotPersistHistory()
+    {
+        var resourceId = Guid.NewGuid();
+        var parameters = new WorkloadQueryParameters
+        {
+            PeriodStartDate = new DateOnly(2026, 7, 1),
+            PeriodEndDate = new DateOnly(2026, 7, 7)
+        };
+
+        _executionResourceRepository
+            .Setup(repository => repository.GetAllAsync(
+                It.IsAny<ExecutionResourceQueryParameters>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ExecutionResource> { CreateResource(resourceId, "RES-001", 40m) });
+
+        _assignmentRepository
+            .Setup(repository => repository.GetForCapacityCalculationAsync(
+                parameters.PeriodStartDate,
+                parameters.PeriodEndDate,
+                null,
+                null,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<Assignment>());
+
+        var service = CreateService();
+        await service.GetSummaryAsync(parameters);
+
+        _workloadHistoryService.Verify(
+            service => service.PersistCompletedCalculationsAsync(
+                It.IsAny<IReadOnlyList<WorkloadHistoryPersistModel>>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+        _workloadHistoryService.Verify(
+            service => service.PersistCompletedCalculationAsync(
+                It.IsAny<WorkloadHistoryPersistModel>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]

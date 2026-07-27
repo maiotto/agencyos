@@ -170,3 +170,21 @@ Any evolution must preserve:
 - post-commit write semantics
 - prohibition of Event Sourcing for Aggregate reconstruction
 - separation between Domain Events and Audit Events
+
+---
+
+## Implementation Note (US-206)
+
+Release 1.1 delivers the centralized Audit Trail via `audit_event`, automatic non-blocking `IAuditService.RecordSafeAsync` hooks, correlation middleware, and read-only `/audit` APIs, completing EPIC-02 Decision Evolution.
+
+## Implementation Note (US-301)
+
+AI-assisted Recommendation generation and archive emit Audit Events with entity type `AIRecommendation`. Advisory metadata (model/prompt versions) is stored in audit metadata. AI generation failures never mutate Recommendation lifecycle records.
+
+## Implementation Note (US-302)
+
+LLM Explainability generation and archive emit Audit Events with entity type `Explainability`. Informational metadata (model/prompt versions, explanation type) is stored in audit metadata. Explanation generation failures never mutate Recommendation lifecycle records.
+
+## Implementation Note (US-303)
+
+Executive Recommendation Summary generation, versioning, and archive emit Audit Events with entity type `ExecutiveRecommendationSummary`. Briefing metadata (model/prompt versions, linked AI/Explainability ids) is stored in audit metadata. Generation failures never mutate Recommendation, AI Recommendation, or Decision records. Completes EPIC-03.

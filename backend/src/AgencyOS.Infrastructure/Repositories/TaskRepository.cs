@@ -41,11 +41,11 @@ public class TaskRepository : ITaskRepository
         Guid? excludeTaskId = null,
         CancellationToken cancellationToken = default)
     {
-        var normalizedCode = code.Trim();
+        var normalizedCode = code.Trim().ToLowerInvariant();
 
         var query = _context.MissionTasks
             .AsNoTracking()
-            .Where(t => t.MissionId == missionId && t.Code == normalizedCode);
+            .Where(t => t.MissionId == missionId && t.Code.ToLower() == normalizedCode);
 
         if (excludeTaskId.HasValue)
         {

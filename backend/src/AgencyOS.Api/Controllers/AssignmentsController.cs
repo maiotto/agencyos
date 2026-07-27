@@ -50,12 +50,10 @@ public class AssignmentsController : ControllerBase
     /// <response code="201">Assignment created.</response>
     /// <response code="400">Validation or business rule error.</response>
     /// <response code="404">Task or execution resource not found.</response>
-    /// <response code="409">Business rule violation.</response>
     [HttpPost]
     [ProducesResponseType(typeof(AssignmentResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<AssignmentResponse>> Create(
         [FromBody] CreateAssignmentRequest request,
         CancellationToken cancellationToken)
@@ -70,12 +68,10 @@ public class AssignmentsController : ControllerBase
     /// <response code="200">Assignment updated.</response>
     /// <response code="400">Validation or business rule error.</response>
     /// <response code="404">Assignment not found.</response>
-    /// <response code="409">Business rule violation.</response>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(AssignmentResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<AssignmentResponse>> Update(
         Guid id,
         [FromBody] UpdateAssignmentRequest request,

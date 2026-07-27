@@ -12,15 +12,45 @@ public class DeliveryStrategyRankingServiceTests
 {
     private readonly Mock<IDeliveryStrategyEvaluatorService> _deliveryStrategyEvaluatorService = new();
     private readonly Mock<ICompanyDecisionProfileRepository> _companyDecisionProfileRepository = new();
+    private readonly Mock<IRecommendationService> _recommendationService = new();
     private readonly Mock<ILogger<DeliveryStrategyRankingService>> _logger = new();
 
     private static readonly Guid DecisionProfileId = Guid.Parse("11111111-1111-1111-1111-111111111106");
+    private static readonly Guid CompanyId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
 
     private DeliveryStrategyRankingService CreateService()
     {
+        _recommendationService
+            .Setup(service => service.PersistRankedStrategiesAsync(
+                It.IsAny<RankDeliveryStrategyRequest>(),
+                It.IsAny<RankDeliveryStrategyResponse>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync((RankDeliveryStrategyRequest _, RankDeliveryStrategyResponse ranking, CancellationToken _) =>
+                ranking.RankedStrategies.Select(ranked =>
+                    Recommendation.Create(
+                        CompanyId,
+                        ranking.MissionId,
+                        ranking.ContractId,
+                        ranked.EvaluatedStrategy.Strategy.StrategyId,
+                        $"REC-{ranked.EvaluatedStrategy.Strategy.StrategyId:N}",
+                        ranked.EvaluatedStrategy.Strategy.StrategyName,
+                        "summary",
+                        "reason",
+                        ranked.FinalScore,
+                        ranked.RankPosition,
+                        1,
+                        RecommendationVersions.CurrentDecisionEngineVersion,
+                        null,
+                        "{}",
+                        "{}",
+                        "{\"ok\":true}",
+                        "decision-engine",
+                        DateTimeOffset.UtcNow)).ToList());
+
         return new DeliveryStrategyRankingService(
             _deliveryStrategyEvaluatorService.Object,
             _companyDecisionProfileRepository.Object,
+            _recommendationService.Object,
             _logger.Object);
     }
 
@@ -60,7 +90,14 @@ public class DeliveryStrategyRankingServiceTests
         Assert.Equal("Balanced Strategy", response.CompanyDecisionProfileName);
         Assert.Equal(cheaperStrategyId, response.RankedStrategies[0].EvaluatedStrategy.Strategy.StrategyId);
         Assert.Equal(1, response.RankedStrategies[0].RankPosition);
+        Assert.NotEqual(Guid.Empty, response.RankedStrategies[0].RecommendationId);
         Assert.True(response.RankedStrategies[0].FinalScore > response.RankedStrategies[1].FinalScore);
+        _recommendationService.Verify(
+            service => service.PersistRankedStrategiesAsync(
+                It.IsAny<RankDeliveryStrategyRequest>(),
+                It.IsAny<RankDeliveryStrategyResponse>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -127,22 +164,21 @@ public class DeliveryStrategyRankingServiceTests
     {
         return new RankDeliveryStrategyRequest
         {
+            CompanyId = CompanyId,
             ContractId = contractId,
             MissionId = missionId,
             PeriodStartDate = new DateOnly(2026, 7, 1),
             PeriodEndDate = new DateOnly(2026, 7, 31),
-            CompanyDecisionProfileId = DecisionProfileId
+            CompanyDecisionProfileId = DecisionProfileId,
+            GeneratedBy = "decision-engine"
         };
     }
 
-    private static CompanyDecisionProfile CreateBalancedProfile()
-    {
-        return new CompanyDecisionProfile
-        {
-            Id = DecisionProfileId,
-            Code = "BalancedStrategy",
-            Name = "Balanced Strategy",
-            Dimensions =
+    private static CompanyDecisionProfile CreateBalancedProfile() =>
+        CompanyDecisionProfile.CreateRankingView(
+            DecisionProfileId,
+            "BalancedStrategy",
+            "Balanced Strategy",
             [
                 new DecisionProfileDimensionSetting
                 {
@@ -150,9 +186,7 @@ public class DeliveryStrategyRankingServiceTests
                     Weight = 1m,
                     PreferHigherValues = false
                 }
-            ]
-        };
-    }
+            ]);
 
     private static EvaluatedDeliveryStrategyResponse CreateEvaluatedStrategy(
         Guid strategyId,

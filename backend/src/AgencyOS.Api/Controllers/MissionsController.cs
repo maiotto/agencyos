@@ -46,10 +46,14 @@ public class MissionsController : ControllerBase
     /// Creates a new mission.
     /// </summary>
     /// <response code="201">Mission created.</response>
-    /// <response code="400">Validation failed.</response>
+    /// <response code="400">Validation or business rule error.</response>
+    /// <response code="404">Contract not found.</response>
+    /// <response code="409">Duplicate mission code.</response>
     [HttpPost]
     [ProducesResponseType(typeof(MissionResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<MissionResponse>> Create(
         [FromBody] CreateMissionRequest request,
         CancellationToken cancellationToken)
@@ -64,10 +68,12 @@ public class MissionsController : ControllerBase
     /// <response code="200">Mission updated.</response>
     /// <response code="400">Validation failed.</response>
     /// <response code="404">Mission not found.</response>
+    /// <response code="409">Duplicate mission code.</response>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(MissionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<ActionResult<MissionResponse>> Update(
         Guid id,
         [FromBody] UpdateMissionRequest request,

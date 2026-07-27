@@ -8,6 +8,11 @@ public interface IMissionRepository
 
     Task<Mission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    Task<bool> ExistsWithCodeAsync(
+        string code,
+        Guid? excludeMissionId = null,
+        CancellationToken cancellationToken = default);
+
     Task<Mission> AddAsync(Mission mission, CancellationToken cancellationToken = default);
 
     Task<Mission> UpdateAsync(Mission mission, CancellationToken cancellationToken = default);

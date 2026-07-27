@@ -127,9 +127,19 @@ Capacity represents the total productive hours available for operational executi
 ## Inputs
 
 - Execution Resources
-- Working Calendar
+- Working Calendar (US-101; Active calendars only — BR-501)
+- Holidays (US-102; non-working days via holiday-aware calendar evaluation — BR-503)
+- Working Hours (US-103; weekday schedules and planned net hours — BR-504)
+- Resource Availability (US-104; weekly flags and daily overrides — BR-505)
 - Assignments
-- Business Calendar
+
+Capacity Engine (US-105) sums planned operational hours day-by-day. Missing operational configuration yields a business-rule error (BR-508); there is no Monday–Friday fallback.
+
+Successful calculations automatically persist immutable Capacity History (US-106 / BR-601..BR-609) so past periods can be queried, aggregated, and compared without recalculation. History is Create-only; failed calculations never write history.
+
+Planning Templates (US-108) capture reusable configuration references (Working Calendar, Working Hours, Resource Availability strategy, default planning window, capacity rules) without duplicating operational data. Applying a template prepares a new planning configuration and may invoke Capacity/Workload engines; templates and historical records are never mutated by Apply.
+
+Portfolio Planning (US-109) consolidates multiple Active Missions into a Portfolio for a planning period. Portfolio Capacity and Workload use the existing engines; historical Capacity/Workload aggregates support analysis. Portfolio calculations never modify Mission planning (BR-911).
 
 ---
 
@@ -153,6 +163,44 @@ Capacity shall always be expressed in productive hours.
 ### BR-PLAN-002
 
 Capacity calculations are deterministic.
+
+---
+
+### BR-501
+
+Capacity shall only consider Active Working Calendars.
+
+### BR-502
+
+Capacity shall ignore non-working weekdays.
+
+### BR-503
+
+Capacity shall ignore Holidays.
+
+### BR-504
+
+Capacity shall respect configured Working Hours.
+
+### BR-505
+
+Capacity shall respect Resource Availability.
+
+### BR-506
+
+Capacity shall calculate planned working hours.
+
+### BR-507
+
+Historical calculations must remain reproducible.
+
+### BR-508
+
+If no operational configuration exists, return a validation/business-rule error. Do not fall back to hardcoded Monday–Friday logic.
+
+### BR-509
+
+Capacity calculation must be deterministic.
 
 ---
 
@@ -203,6 +251,8 @@ Workload represents committed productive hours.
 - Workload by Mission
 - Workload by Contract
 - Workload by Period
+
+Successful calculations automatically persist immutable Workload History (US-107 / BR-701..BR-709) so past periods can be queried, aggregated, compared, and trended without recalculation. History is Create-only; failed calculations and summary calculations never write history.
 
 ---
 
@@ -537,6 +587,8 @@ Scenario Generation
 Automatic Corrections
 
 These capabilities belong to future releases.
+
+Note (Release 1.1 / US-405): Cross-Portfolio Planning is not a fifth Planning Engine and does not change this MVP baseline. It is a read-only, advisory Application-layer slice that *consumes* the existing Capacity Engine, Workload Engine, and Allocation Conflict Detection Engine outputs (stored Portfolio `CapacitySummary`/`WorkloadSummary` snapshots, `CapacityHistory`/`WorkloadHistory`, and `IAllocationConflictDetectionService`) to present an enterprise-wide, multi-Portfolio balance/conflict view and advisory rebalancing suggestions. It never recalculates, mutates, or bypasses these engines' immutable history, and its "scenarios" are TEMPORARY in-memory comparison records (DEC-405-001), not the "Scenario Generation" or "Simulation" capabilities excluded above — no optimization or automatic correction is performed.
 
 ---
 

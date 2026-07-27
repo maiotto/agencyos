@@ -7,6 +7,10 @@ public class RankDeliveryStrategyRequestValidator : AbstractValidator<RankDelive
 {
     public RankDeliveryStrategyRequestValidator()
     {
+        RuleFor(x => x.CompanyId)
+            .NotEmpty()
+            .WithMessage("Company is required.");
+
         RuleFor(x => x.ContractId)
             .NotEmpty()
             .WithMessage("Contract is required.");
@@ -28,5 +32,9 @@ public class RankDeliveryStrategyRequestValidator : AbstractValidator<RankDelive
         RuleFor(x => x.CompanyDecisionProfileId)
             .NotEmpty()
             .WithMessage("Company Decision Profile is required.");
+
+        RuleFor(x => x.GeneratedBy)
+            .MaximumLength(200)
+            .When(x => x.GeneratedBy is not null);
     }
 }

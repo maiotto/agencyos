@@ -1,5 +1,6 @@
 using AgencyOS.Application.DTOs;
 using AgencyOS.Application.Interfaces;
+using AgencyOS.Application.Mappings;
 using AgencyOS.Application.Services;
 using AgencyOS.Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -111,13 +112,127 @@ public class DeliveryStrategyBuilderExcludeMissionRegressionTests
                         ? Array.Empty<Assignment>()
                         : new List<Assignment> { existingAssignment }));
 
+        var resourceAvailabilityRepository = new Mock<IResourceAvailabilityRepository>();
+        var workingCalendarRepository = new Mock<IWorkingCalendarRepository>();
+        var workingHoursRepository = new Mock<IWorkingHoursRepository>();
+        var holidayRepository = new Mock<IHolidayRepository>();
+
+        var companyId = Guid.Parse("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+        var calendar = WorkingCalendar.Create(
+            companyId,
+            "Default Calendar",
+            new DateOnly(2026, 1, 1),
+            null,
+            WorkingDayNames.DefaultWeekdays,
+            DateTimeOffset.UtcNow);
+        calendar.Activate(DateTimeOffset.UtcNow);
+
+        var workingHours = WorkingHours.Create(
+            calendar.Id,
+            "Standard Hours",
+            new DateOnly(2026, 1, 1),
+            null,
+            WorkingDayNames.Ordered.Select(day => new WorkingHoursDayDefinition
+            {
+                DayOfWeek = day,
+                Enabled = WorkingDayNames.DefaultWeekdays.Contains(day),
+                StartTime = WorkingDayNames.DefaultWeekdays.Contains(day) ? new TimeOnly(9, 0) : null,
+                EndTime = WorkingDayNames.DefaultWeekdays.Contains(day) ? new TimeOnly(17, 0) : null,
+                BreakStart = null,
+                BreakEnd = null
+            }).ToList(),
+            DateTimeOffset.UtcNow);
+        workingHours.Activate(DateTimeOffset.UtcNow);
+
+        var availability = ResourceAvailability.Create(
+            resourceId,
+            calendar.Id,
+            workingHours.Id,
+            "Standard Availability",
+            new DateOnly(2026, 1, 1),
+            null,
+            WorkingDayNames.Ordered.Select(day => new ResourceAvailabilityWeekDayDefinition
+            {
+                DayOfWeek = day,
+                Enabled = WorkingDayNames.DefaultWeekdays.Contains(day)
+            }).ToList(),
+            [],
+            DateTimeOffset.UtcNow);
+        availability.Activate(DateTimeOffset.UtcNow);
+
+        resourceAvailabilityRepository
+            .Setup(repository => repository.GetActiveCoveringPeriodForResourcesAsync(
+                It.IsAny<IReadOnlyCollection<Guid>>(),
+                periodStartDate,
+                periodEndDate,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ResourceAvailability> { availability });
+
+        resourceAvailabilityRepository
+            .Setup(repository => repository.GetActiveCoveringPeriodAsync(
+                resourceId,
+                periodStartDate,
+                periodEndDate,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ResourceAvailability> { availability });
+
+        workingCalendarRepository
+            .Setup(repository => repository.GetByIdAsync(calendar.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(calendar);
+
+        workingHoursRepository
+            .Setup(repository => repository.GetByIdAsync(workingHours.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(workingHours);
+
+        holidayRepository
+            .Setup(repository => repository.GetActiveForCompanyInRangeAsync(
+                companyId,
+                periodStartDate,
+                periodEndDate,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<Holiday>());
+
+        var capacityHistoryService = new Mock<ICapacityHistoryService>();
+        capacityHistoryService
+            .Setup(service => service.PersistCompletedCalculationAsync(
+                It.IsAny<CapacityResponse>(),
+                It.IsAny<Guid>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        capacityHistoryService
+            .Setup(service => service.PersistCompletedCalculationsAsync(
+                It.IsAny<IReadOnlyList<(CapacityResponse Capacity, Guid CompanyId)>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         var capacityCalculatorService = new CapacityCalculatorService(
             executionResourceRepository.Object,
             assignmentRepository.Object,
+            resourceAvailabilityRepository.Object,
+            workingCalendarRepository.Object,
+            workingHoursRepository.Object,
+            holidayRepository.Object,
+            capacityHistoryService.Object,
             capacityLogger.Object);
+        var workloadHistoryService = new Mock<IWorkloadHistoryService>();
+        workloadHistoryService
+            .Setup(service => service.PersistCompletedCalculationAsync(
+                It.IsAny<WorkloadHistoryPersistModel>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        workloadHistoryService
+            .Setup(service => service.PersistCompletedCalculationsAsync(
+                It.IsAny<IReadOnlyList<WorkloadHistoryPersistModel>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         var workloadCalculatorService = new WorkloadCalculatorService(
             executionResourceRepository.Object,
             assignmentRepository.Object,
+            resourceAvailabilityRepository.Object,
+            workingCalendarRepository.Object,
+            holidayRepository.Object,
+            workloadHistoryService.Object,
             workloadLogger.Object);
         var availabilityEngineService = new AvailabilityEngineService(
             capacityCalculatorService,

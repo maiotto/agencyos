@@ -19,6 +19,7 @@ public class MissionRepository : IMissionRepository
         return await _context.Missions
             .AsNoTracking()
             .OrderBy(m => m.Name)
+            .ThenBy(m => m.Code)
             .ToListAsync(cancellationToken);
     }
 
@@ -26,6 +27,25 @@ public class MissionRepository : IMissionRepository
     {
         return await _context.Missions
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
+    }
+
+    public async Task<bool> ExistsWithCodeAsync(
+        string code,
+        Guid? excludeMissionId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedCode = code.Trim().ToLowerInvariant();
+
+        var query = _context.Missions
+            .AsNoTracking()
+            .Where(m => m.Code.ToLower() == normalizedCode);
+
+        if (excludeMissionId.HasValue)
+        {
+            query = query.Where(m => m.Id != excludeMissionId.Value);
+        }
+
+        return await query.AnyAsync(cancellationToken);
     }
 
     public async Task<Mission> AddAsync(Mission mission, CancellationToken cancellationToken = default)

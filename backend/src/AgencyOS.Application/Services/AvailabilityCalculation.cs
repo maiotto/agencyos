@@ -1,28 +1,31 @@
 using AgencyOS.Application.DTOs;
+using AgencyOS.Domain.Entities;
 
 namespace AgencyOS.Application.Services;
 
 public static class AvailabilityCalculation
 {
-    private static readonly DayOfWeek[] WorkingDays =
+    public static bool IsWorkingDay(DateOnly date, IReadOnlyCollection<string> configuredWorkingDays)
     {
-        DayOfWeek.Monday,
-        DayOfWeek.Tuesday,
-        DayOfWeek.Wednesday,
-        DayOfWeek.Thursday,
-        DayOfWeek.Friday
-    };
+        if (configuredWorkingDays is null || configuredWorkingDays.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Configured working days are required. Availability cannot fall back to Monday–Friday defaults.");
+        }
 
-    public static bool IsWorkingDay(DateOnly date) =>
-        Array.Exists(WorkingDays, day => day == date.DayOfWeek);
+        return WorkingDayNames.IsWorkingDay(date, configuredWorkingDays);
+    }
 
-    public static IReadOnlyList<DateOnly> GetWorkingDaysInPeriod(DateOnly periodStartDate, DateOnly periodEndDate)
+    public static IReadOnlyList<DateOnly> GetWorkingDaysInPeriod(
+        DateOnly periodStartDate,
+        DateOnly periodEndDate,
+        IReadOnlyCollection<string> configuredWorkingDays)
     {
         var workingDays = new List<DateOnly>();
 
         for (var date = periodStartDate; date <= periodEndDate; date = date.AddDays(1))
         {
-            if (IsWorkingDay(date))
+            if (IsWorkingDay(date, configuredWorkingDays))
             {
                 workingDays.Add(date);
             }
@@ -31,9 +34,30 @@ public static class AvailabilityCalculation
         return workingDays;
     }
 
-    public static decimal CalculateDailyCapacityHours(decimal capacityHoursPerWeek)
+    public static IReadOnlyList<DateOnly> GetOperationalDaysFromCapacity(
+        IReadOnlyList<CapacityDayBreakdownResponse> operationalDays) =>
+        operationalDays
+            .Where(day => day.IsOperationalDay && day.PlannedCapacityHours > 0)
+            .Select(day => day.Date)
+            .OrderBy(date => date)
+            .ToList();
+
+    public static Dictionary<DateOnly, decimal> GetDailyCapacityHoursFromCapacity(
+        IReadOnlyList<CapacityDayBreakdownResponse> operationalDays) =>
+        operationalDays
+            .Where(day => day.IsOperationalDay && day.PlannedCapacityHours > 0)
+            .ToDictionary(day => day.Date, day => day.PlannedCapacityHours);
+
+    public static decimal CalculateDailyCapacityHours(
+        decimal capacityHoursPerWeek,
+        int workingDaysPerWeek)
     {
-        return capacityHoursPerWeek / 5m;
+        if (workingDaysPerWeek <= 0)
+        {
+            return 0;
+        }
+
+        return capacityHoursPerWeek / workingDaysPerWeek;
     }
 
     public static decimal DeriveCapacityHoursPerWeek(decimal totalCapacityHours, int periodDays)
@@ -70,8 +94,10 @@ public static class AvailabilityCalculation
     public static Dictionary<DateOnly, decimal> BuildDailyOccupiedHours(
         DateOnly periodStartDate,
         DateOnly periodEndDate,
-        IReadOnlyList<WorkloadAssignmentDistributionItem> assignments)
+        IReadOnlyList<WorkloadAssignmentDistributionItem> assignments,
+        IReadOnlyList<DateOnly> operationalDays)
     {
+        var operationalDaySet = operationalDays.ToHashSet();
         var occupiedHoursByDay = new Dictionary<DateOnly, decimal>();
 
         foreach (var assignment in assignments)
@@ -88,7 +114,9 @@ public static class AvailabilityCalculation
                 continue;
             }
 
-            var workingDays = GetWorkingDaysInPeriod(rangeStart, rangeEnd);
+            var workingDays = operationalDays
+                .Where(day => day >= rangeStart && day <= rangeEnd)
+                .ToList();
 
             if (workingDays.Count == 0)
             {
@@ -99,6 +127,11 @@ public static class AvailabilityCalculation
 
             foreach (var day in workingDays)
             {
+                if (!operationalDaySet.Contains(day))
+                {
+                    continue;
+                }
+
                 occupiedHoursByDay[day] = occupiedHoursByDay.GetValueOrDefault(day) + hoursPerDay;
             }
         }
@@ -109,23 +142,27 @@ public static class AvailabilityCalculation
     public static IReadOnlyList<AvailabilityTimeSlotResponse> BuildAvailableTimeSlots(
         DateOnly periodStartDate,
         DateOnly periodEndDate,
-        decimal capacityHoursPerWeek,
+        IReadOnlyDictionary<DateOnly, decimal> dailyCapacityHours,
         IReadOnlyList<WorkloadAssignmentDistributionItem> assignments)
     {
-        var dailyCapacityHours = CalculateDailyCapacityHours(capacityHoursPerWeek);
-        var dailyOccupiedHours = BuildDailyOccupiedHours(periodStartDate, periodEndDate, assignments);
-        var workingDays = GetWorkingDaysInPeriod(periodStartDate, periodEndDate);
+        var operationalDays = dailyCapacityHours.Keys.OrderBy(date => date).ToList();
+        var dailyOccupiedHours = BuildDailyOccupiedHours(
+            periodStartDate,
+            periodEndDate,
+            assignments,
+            operationalDays);
         var timeSlots = new List<AvailabilityTimeSlotResponse>();
 
         DateOnly? slotStart = null;
         DateOnly? slotEnd = null;
         decimal slotHours = 0;
 
-        for (var index = 0; index < workingDays.Count; index++)
+        for (var index = 0; index < operationalDays.Count; index++)
         {
-            var day = workingDays[index];
+            var day = operationalDays[index];
+            var dayCapacity = dailyCapacityHours.GetValueOrDefault(day);
             var occupiedHours = dailyOccupiedHours.GetValueOrDefault(day);
-            var availableHours = Math.Max(0, dailyCapacityHours - occupiedHours);
+            var availableHours = Math.Max(0, dayCapacity - occupiedHours);
 
             if (availableHours <= 0)
             {
@@ -142,7 +179,7 @@ public static class AvailabilityCalculation
 
             var continuesPreviousSlot = slotStart.HasValue
                 && index > 0
-                && HasAvailabilityOnDay(workingDays[index - 1], dailyCapacityHours, dailyOccupiedHours);
+                && HasAvailabilityOnDay(operationalDays[index - 1], dailyCapacityHours, dailyOccupiedHours);
 
             if (continuesPreviousSlot)
             {
@@ -172,16 +209,21 @@ public static class AvailabilityCalculation
     public static DateOnly? FindNextAvailableDate(
         DateOnly periodStartDate,
         DateOnly periodEndDate,
-        decimal capacityHoursPerWeek,
+        IReadOnlyDictionary<DateOnly, decimal> dailyCapacityHours,
         IReadOnlyList<WorkloadAssignmentDistributionItem> assignments)
     {
-        var dailyCapacityHours = CalculateDailyCapacityHours(capacityHoursPerWeek);
-        var dailyOccupiedHours = BuildDailyOccupiedHours(periodStartDate, periodEndDate, assignments);
+        var operationalDays = dailyCapacityHours.Keys.OrderBy(date => date).ToList();
+        var dailyOccupiedHours = BuildDailyOccupiedHours(
+            periodStartDate,
+            periodEndDate,
+            assignments,
+            operationalDays);
 
-        foreach (var day in GetWorkingDaysInPeriod(periodStartDate, periodEndDate))
+        foreach (var day in operationalDays)
         {
+            var dayCapacity = dailyCapacityHours.GetValueOrDefault(day);
             var occupiedHours = dailyOccupiedHours.GetValueOrDefault(day);
-            var availableHours = Math.Max(0, dailyCapacityHours - occupiedHours);
+            var availableHours = Math.Max(0, dayCapacity - occupiedHours);
 
             if (availableHours > 0)
             {
@@ -194,11 +236,12 @@ public static class AvailabilityCalculation
 
     private static bool HasAvailabilityOnDay(
         DateOnly day,
-        decimal dailyCapacityHours,
+        IReadOnlyDictionary<DateOnly, decimal> dailyCapacityHours,
         Dictionary<DateOnly, decimal> dailyOccupiedHours)
     {
+        var dayCapacity = dailyCapacityHours.GetValueOrDefault(day);
         var occupiedHours = dailyOccupiedHours.GetValueOrDefault(day);
-        return Math.Max(0, dailyCapacityHours - occupiedHours) > 0;
+        return Math.Max(0, dayCapacity - occupiedHours) > 0;
     }
 
     private static AvailabilityTimeSlotResponse CreateTimeSlot(

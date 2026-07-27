@@ -6,21 +6,19 @@ namespace AgencyOS.Application.Tests;
 
 public class DeliveryStrategyRankingCalculationTests
 {
-    private static readonly CompanyDecisionProfile ProfitMaximizationProfile = new()
-    {
-        Id = Guid.Parse("11111111-1111-1111-1111-111111111101"),
-        Code = "ProfitMaximization",
-        Name = "Profit Maximization",
-        Dimensions =
-        [
-            new DecisionProfileDimensionSetting
-            {
-                Dimension = RankingDimension.EstimatedCost,
-                Weight = 1m,
-                PreferHigherValues = false
-            }
-        ]
-    };
+    private static readonly CompanyDecisionProfile ProfitMaximizationProfile =
+        CompanyDecisionProfile.CreateRankingView(
+            Guid.Parse("11111111-1111-1111-1111-111111111101"),
+            "ProfitMaximization",
+            "Profit Maximization",
+            [
+                new DecisionProfileDimensionSetting
+                {
+                    Dimension = RankingDimension.EstimatedCost,
+                    Weight = 1m,
+                    PreferHigherValues = false
+                }
+            ]);
 
     [Fact]
     public void RankStrategies_OrdersByWeightedScoreDescending()
@@ -100,12 +98,10 @@ public class DeliveryStrategyRankingCalculationTests
         var aiStrategyId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1");
         var humanStrategyId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2");
 
-        var aiAdoptionProfile = new CompanyDecisionProfile
-        {
-            Id = Guid.Parse("11111111-1111-1111-1111-111111111104"),
-            Code = "AiAdoption",
-            Name = "AI Adoption",
-            Dimensions =
+        var aiAdoptionProfile = CompanyDecisionProfile.CreateRankingView(
+            Guid.Parse("11111111-1111-1111-1111-111111111104"),
+            "AiAdoption",
+            "AI Adoption",
             [
                 new DecisionProfileDimensionSetting
                 {
@@ -113,8 +109,7 @@ public class DeliveryStrategyRankingCalculationTests
                     Weight = 1m,
                     PreferHigherValues = true
                 }
-            ]
-        };
+            ]);
 
         var evaluatedStrategies = new List<EvaluatedDeliveryStrategyResponse>
         {

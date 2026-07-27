@@ -53,10 +53,10 @@ public class TaskService : ITaskService
             MissionId = request.MissionId,
             Code = request.Code.Trim(),
             Name = request.Name.Trim(),
-            Description = request.Description,
+            Description = NormalizeOptionalText(request.Description),
             TaskTypeId = request.TaskTypeId,
             TaskStatusId = request.TaskStatusId,
-            Priority = request.Priority,
+            Priority = request.Priority.Trim(),
             EstimatedHours = request.EstimatedHours,
             PlannedStart = request.PlannedStartDate,
             PlannedEnd = request.PlannedEndDate,
@@ -90,10 +90,10 @@ public class TaskService : ITaskService
 
         task.Code = request.Code.Trim();
         task.Name = request.Name.Trim();
-        task.Description = request.Description;
+        task.Description = NormalizeOptionalText(request.Description);
         task.TaskTypeId = request.TaskTypeId;
         task.TaskStatusId = request.TaskStatusId;
-        task.Priority = request.Priority;
+        task.Priority = request.Priority.Trim();
         task.EstimatedHours = request.EstimatedHours;
         task.PlannedStart = request.PlannedStartDate;
         task.PlannedEnd = request.PlannedEndDate;
@@ -238,6 +238,11 @@ public class TaskService : ITaskService
             throw new BusinessRuleException(
                 "Status changes to Completed must use the dedicated task complete endpoint.");
         }
+    }
+
+    private static string? NormalizeOptionalText(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
     private static TaskResponse MapToResponse(MissionTask task)

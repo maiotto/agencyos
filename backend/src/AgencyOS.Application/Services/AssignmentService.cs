@@ -53,12 +53,12 @@ public class AssignmentService : IAssignmentService
             Id = Guid.NewGuid(),
             TaskId = request.TaskId,
             ExecutionResourceId = request.ExecutionResourceId,
-            AssignmentRole = request.AssignmentRole.Trim(),
+            AssignmentRole = CanonicalizeRole(request.AssignmentRole),
             PlannedHours = request.PlannedHours,
             PlannedStartDate = request.PlannedStartDate,
             PlannedEndDate = request.PlannedEndDate,
             AllocationPercentage = request.AllocationPercentage,
-            Status = request.Status.Trim(),
+            Status = CanonicalizeStatus(request.Status),
             Notes = NormalizeOptionalText(request.Notes),
             CreatedAt = now,
             UpdatedAt = now
@@ -85,12 +85,12 @@ public class AssignmentService : IAssignmentService
         EnsureAssignmentCanBeEdited(assignment);
         EnsureStatusChangeIsValid(assignment, request.Status);
 
-        assignment.AssignmentRole = request.AssignmentRole.Trim();
+        assignment.AssignmentRole = CanonicalizeRole(request.AssignmentRole);
         assignment.PlannedHours = request.PlannedHours;
         assignment.PlannedStartDate = request.PlannedStartDate;
         assignment.PlannedEndDate = request.PlannedEndDate;
         assignment.AllocationPercentage = request.AllocationPercentage;
-        assignment.Status = request.Status.Trim();
+        assignment.Status = CanonicalizeStatus(request.Status);
         assignment.Notes = NormalizeOptionalText(request.Notes);
         assignment.UpdatedAt = DateTimeOffset.UtcNow;
 
@@ -183,6 +183,28 @@ public class AssignmentService : IAssignmentService
             throw new BusinessRuleException(
                 "Status changes to Cancelled must use the dedicated assignment cancel endpoints.");
         }
+    }
+
+    private static string CanonicalizeRole(string role)
+    {
+        return Canonicalize(role, AssignmentRole.All);
+    }
+
+    private static string CanonicalizeStatus(string status)
+    {
+        return Canonicalize(status, AssignmentStatus.All);
+    }
+
+    /// <summary>
+    /// Stores the approved spelling of a closed value set so persisted data stays comparable
+    /// even when the caller supplies a different casing.
+    /// </summary>
+    private static string Canonicalize(string value, IReadOnlySet<string> allowedValues)
+    {
+        var trimmed = value.Trim();
+
+        return allowedValues.FirstOrDefault(allowed =>
+            string.Equals(allowed, trimmed, StringComparison.OrdinalIgnoreCase)) ?? trimmed;
     }
 
     private static string? NormalizeOptionalText(string? value)

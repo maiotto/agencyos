@@ -41,15 +41,12 @@ public class AvailabilityEngineService : IAvailabilityEngineService
             var capacities = await _capacityCalculatorService.GetAllAsync(capacityParameters, cancellationToken);
             var workloads = await _workloadCalculatorService.GetAllAsync(workloadParameters, cancellationToken);
             var workloadsByResourceId = workloads.ToDictionary(workload => workload.ExecutionResourceId);
-            var periodDays = CapacityCalculation.GetInclusivePeriodDays(
-                parameters.PeriodStartDate,
-                parameters.PeriodEndDate);
 
             var results = capacities
                 .Select(capacity =>
                 {
                     workloadsByResourceId.TryGetValue(capacity.ExecutionResourceId, out var workload);
-                    return BuildAvailabilityResponse(capacity, workload, periodDays);
+                    return BuildAvailabilityResponse(capacity, workload);
                 })
                 .OrderBy(response => response.NextAvailableDate ?? DateOnly.MaxValue)
                 .ThenBy(response => response.ExecutionResourceName)
@@ -104,11 +101,8 @@ public class AvailabilityEngineService : IAvailabilityEngineService
                 resourceId,
                 workloadParameters,
                 cancellationToken);
-            var periodDays = CapacityCalculation.GetInclusivePeriodDays(
-                parameters.PeriodStartDate,
-                parameters.PeriodEndDate);
 
-            var result = BuildAvailabilityResponse(capacity, workload, periodDays);
+            var result = BuildAvailabilityResponse(capacity, workload);
 
             stopwatch.Stop();
 
@@ -190,17 +184,15 @@ public class AvailabilityEngineService : IAvailabilityEngineService
 
     private static AvailabilityResponse BuildAvailabilityResponse(
         CapacityResponse capacity,
-        WorkloadResponse? workload,
-        int periodDays)
+        WorkloadResponse? workload)
     {
         var assignments = workload?.AssignmentDistribution ?? Array.Empty<WorkloadAssignmentDistributionItem>();
         var occupiedHours = workload?.TotalPlannedHours ?? 0m;
         var availableHours = AvailabilityCalculation.CapAvailableHours(
             capacity.AvailableHours,
             capacity.TotalCapacityHours);
-        var capacityHoursPerWeek = AvailabilityCalculation.DeriveCapacityHoursPerWeek(
-            capacity.TotalCapacityHours,
-            periodDays);
+        var dailyCapacityHours = AvailabilityCalculation.GetDailyCapacityHoursFromCapacity(
+            capacity.OperationalDays);
 
         return new AvailabilityResponse
         {
@@ -212,7 +204,7 @@ public class AvailabilityEngineService : IAvailabilityEngineService
             NextAvailableDate = AvailabilityCalculation.FindNextAvailableDate(
                 capacity.PeriodStartDate,
                 capacity.PeriodEndDate,
-                capacityHoursPerWeek,
+                dailyCapacityHours,
                 assignments),
             AvailableHours = availableHours,
             OccupiedHours = occupiedHours,
@@ -222,7 +214,7 @@ public class AvailabilityEngineService : IAvailabilityEngineService
             AvailableTimeSlots = AvailabilityCalculation.BuildAvailableTimeSlots(
                 capacity.PeriodStartDate,
                 capacity.PeriodEndDate,
-                capacityHoursPerWeek,
+                dailyCapacityHours,
                 assignments)
         };
     }

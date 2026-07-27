@@ -155,12 +155,34 @@ public class AvailabilityEngineServiceTests
             ExecutionResourceName = $"Resource {code}",
             PeriodStartDate = new DateOnly(2026, 7, 1),
             PeriodEndDate = new DateOnly(2026, 7, 7),
+            OperationalDayCount = 5,
             TotalCapacityHours = totalCapacityHours,
             AllocatedHours = allocatedHours,
             AvailableHours = availableHours,
             UtilizationPercentage = 25m,
-            RemainingCapacityHours = availableHours
+            RemainingCapacityHours = availableHours,
+            OperationalDays = CreateWeekdayOperationalDays(8m)
         };
+    }
+
+    private static IReadOnlyList<CapacityDayBreakdownResponse> CreateWeekdayOperationalDays(decimal hoursPerDay)
+    {
+        var days = new List<CapacityDayBreakdownResponse>();
+        for (var date = new DateOnly(2026, 7, 1); date <= new DateOnly(2026, 7, 7); date = date.AddDays(1))
+        {
+            var isOperational = date.DayOfWeek is >= DayOfWeek.Monday and <= DayOfWeek.Friday;
+            days.Add(new CapacityDayBreakdownResponse
+            {
+                Date = date,
+                IsOperationalDay = isOperational,
+                IsCalendarWorkingWeekday = isOperational,
+                IsHoliday = false,
+                IsResourceAvailable = isOperational,
+                PlannedCapacityHours = isOperational ? hoursPerDay : 0m
+            });
+        }
+
+        return days;
     }
 
     private static WorkloadResponse CreateWorkloadResponse(

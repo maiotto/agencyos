@@ -167,6 +167,21 @@ public class AllocationConflictDetectionServiceTests
         string code,
         decimal totalCapacityHours)
     {
+        var operationalDays = new List<CapacityDayBreakdownResponse>();
+        for (var date = new DateOnly(2026, 7, 1); date <= new DateOnly(2026, 7, 7); date = date.AddDays(1))
+        {
+            var isOperational = date.DayOfWeek is >= DayOfWeek.Monday and <= DayOfWeek.Friday;
+            operationalDays.Add(new CapacityDayBreakdownResponse
+            {
+                Date = date,
+                IsOperationalDay = isOperational,
+                IsCalendarWorkingWeekday = isOperational,
+                IsHoliday = false,
+                IsResourceAvailable = isOperational,
+                PlannedCapacityHours = isOperational ? 8m : 0m
+            });
+        }
+
         return new CapacityResponse
         {
             ExecutionResourceId = resourceId,
@@ -174,11 +189,13 @@ public class AllocationConflictDetectionServiceTests
             ExecutionResourceName = $"Resource {code}",
             PeriodStartDate = new DateOnly(2026, 7, 1),
             PeriodEndDate = new DateOnly(2026, 7, 7),
+            OperationalDayCount = operationalDays.Count(day => day.IsOperationalDay),
             TotalCapacityHours = totalCapacityHours,
             AllocatedHours = totalCapacityHours,
             AvailableHours = 0m,
             UtilizationPercentage = 100m,
-            RemainingCapacityHours = 0m
+            RemainingCapacityHours = 0m,
+            OperationalDays = operationalDays
         };
     }
 

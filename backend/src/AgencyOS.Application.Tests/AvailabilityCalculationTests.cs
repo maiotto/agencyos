@@ -1,20 +1,30 @@
 using AgencyOS.Application.DTOs;
 using AgencyOS.Application.Services;
+using AgencyOS.Domain.Entities;
 
 namespace AgencyOS.Application.Tests;
 
 public class AvailabilityCalculationTests
 {
+    private static readonly IReadOnlyList<string> Weekdays = WorkingDayNames.DefaultWeekdays;
+
     [Fact]
-    public void IsWorkingDay_ReturnsTrueForWeekdays()
+    public void IsWorkingDay_ReturnsTrueForConfiguredWeekdays()
     {
-        Assert.True(AvailabilityCalculation.IsWorkingDay(new DateOnly(2026, 7, 6)));
+        Assert.True(AvailabilityCalculation.IsWorkingDay(new DateOnly(2026, 7, 6), Weekdays));
     }
 
     [Fact]
     public void IsWorkingDay_ReturnsFalseForWeekends()
     {
-        Assert.False(AvailabilityCalculation.IsWorkingDay(new DateOnly(2026, 7, 4)));
+        Assert.False(AvailabilityCalculation.IsWorkingDay(new DateOnly(2026, 7, 4), Weekdays));
+    }
+
+    [Fact]
+    public void IsWorkingDay_ThrowsWhenConfigurationMissing()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            AvailabilityCalculation.IsWorkingDay(new DateOnly(2026, 7, 6), Array.Empty<string>()));
     }
 
     [Fact]
@@ -22,7 +32,8 @@ public class AvailabilityCalculationTests
     {
         var workingDays = AvailabilityCalculation.GetWorkingDaysInPeriod(
             new DateOnly(2026, 7, 1),
-            new DateOnly(2026, 7, 7));
+            new DateOnly(2026, 7, 7),
+            Weekdays);
 
         Assert.Equal(5, workingDays.Count);
     }
@@ -60,10 +71,15 @@ public class AvailabilityCalculationTests
             }
         };
 
+        var dailyCapacity = CreateDailyCapacity(
+            new DateOnly(2026, 7, 1),
+            new DateOnly(2026, 7, 10),
+            8m);
+
         var timeSlots = AvailabilityCalculation.BuildAvailableTimeSlots(
             new DateOnly(2026, 7, 1),
             new DateOnly(2026, 7, 10),
-            40m,
+            dailyCapacity,
             assignments);
 
         Assert.Equal(2, timeSlots.Count);
@@ -90,12 +106,35 @@ public class AvailabilityCalculationTests
             }
         };
 
+        var dailyCapacity = CreateDailyCapacity(
+            new DateOnly(2026, 7, 1),
+            new DateOnly(2026, 7, 7),
+            8m);
+
         var nextAvailableDate = AvailabilityCalculation.FindNextAvailableDate(
             new DateOnly(2026, 7, 1),
             new DateOnly(2026, 7, 7),
-            40m,
+            dailyCapacity,
             assignments);
 
         Assert.Equal(new DateOnly(2026, 7, 2), nextAvailableDate);
+    }
+
+    private static Dictionary<DateOnly, decimal> CreateDailyCapacity(
+        DateOnly start,
+        DateOnly end,
+        decimal hoursPerDay)
+    {
+        var result = new Dictionary<DateOnly, decimal>();
+
+        for (var date = start; date <= end; date = date.AddDays(1))
+        {
+            if (WorkingDayNames.IsWorkingDay(date, Weekdays))
+            {
+                result[date] = hoursPerDay;
+            }
+        }
+
+        return result;
     }
 }

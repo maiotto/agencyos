@@ -222,3 +222,32 @@ values
         '2026-07-22 00:00:00+00',
         '2026-07-22 00:00:00+00'
     );
+
+-- ============================================================
+-- TABLE: working_calendar (US-101 reference sample)
+-- CompanyId scheme: 22222222-2222-4222-8222-000000000001
+-- ============================================================
+
+insert into public.working_calendar (
+    id,
+    company_id,
+    name,
+    status,
+    effective_from,
+    effective_to,
+    working_days,
+    created_at,
+    updated_at
+)
+values
+    (
+        '33333333-3333-4333-8333-000000000001',
+        '22222222-2222-4222-8222-000000000001',
+        'Standard Business Week',
+        'Inactive',
+        '2026-08-01',
+        null,
+        array['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        '2026-07-26 00:00:00+00',
+        '2026-07-26 00:00:00+00'
+    );

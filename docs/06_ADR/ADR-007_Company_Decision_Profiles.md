@@ -124,4 +124,23 @@ Profile persistence may evolve; the ranking algorithm must remain independent of
 
 - DEC-008-002 in Decision Log
 - DEC-008-004 in Decision Log
+- DEC-401-001 in Decision Log
 - ADR-008 Documentation Update Workflow
+
+---
+
+## Implementation Note (Release 1.1 / US-401)
+
+The "Future Evolution" migration described above was implemented in Release 1.1 (US-401, Company Decision Profiles).
+
+Company Decision Profiles are now database-backed:
+
+- Persisted in the `company_decision_profile` table (see migration `20260726340000_create_company_decision_profile_tables.sql`), replacing the configuration-only `CompanyDecisionProfiles` section in `appsettings.json` and the `CompanyDecisionProfilesOptions` binding.
+- `ICompanyDecisionProfileRepository` is implemented directly against `ApplicationDbContext` (EF Core) instead of `IOptions<CompanyDecisionProfilesOptions>`.
+- Each Company owns its own set of profiles, versioned by an immutable `ProfileFamilyId` lineage: editing a profile creates a new `Version` (BR-1905) and deactivates the previous version rather than mutating it in place.
+- Exactly one profile per company may be the default Active profile (BR-1901), enforced both at the service layer and via a partial unique index (`uq_company_decision_profile_one_default`).
+- A `CompanyDecisionProfileService` and `DecisionProfilesController` (`/decision-profiles`) expose full CRUD plus Activate/Deactivate/Archive/Clone/SetDefault/ClearDefault lifecycle operations, replacing the MVP's read-only configuration binding.
+- The six original default profiles are preserved as seed data for the default company (`aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`) with the same Ids used previously in configuration, with "Balanced Strategy" seeded as the default Active profile.
+- The ranking algorithm contract is unchanged: `DeliveryStrategyRankingCalculation` still applies min-max normalization and weighted scoring using only the active dimensions supplied by the selected profile, and remains independent of business priorities. Ranking now additionally rejects Inactive/Archived profiles (BR-1904) and records the `CompanyDecisionProfileId`/`Version` used on every generated `Recommendation`, `AIRecommendation`, `Explainability`, `ExecutiveRecommendationSummary`, and `RecommendationHistory` record for traceability.
+
+This supersedes the "Database-Backed Profiles" alternative previously rejected for MVP scope; it is no longer rejected, it is the current implementation for Release 1.1 and beyond.

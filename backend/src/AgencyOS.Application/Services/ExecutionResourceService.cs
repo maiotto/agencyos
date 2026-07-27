@@ -46,8 +46,8 @@ public class ExecutionResourceService : IExecutionResourceService
             Id = Guid.NewGuid(),
             Code = request.Code.Trim(),
             Name = request.Name.Trim(),
-            ResourceType = request.ResourceType.Trim(),
-            Status = request.Status.Trim(),
+            ResourceType = CanonicalizeResourceType(request.ResourceType),
+            Status = CanonicalizeStatus(request.Status),
             CapacityHoursPerWeek = request.CapacityHoursPerWeek,
             CostRate = request.CostRate,
             Currency = NormalizeOptionalText(request.Currency),
@@ -79,8 +79,8 @@ public class ExecutionResourceService : IExecutionResourceService
 
         resource.Code = request.Code.Trim();
         resource.Name = request.Name.Trim();
-        resource.ResourceType = request.ResourceType.Trim();
-        resource.Status = request.Status.Trim();
+        resource.ResourceType = CanonicalizeResourceType(request.ResourceType);
+        resource.Status = CanonicalizeStatus(request.Status);
         resource.CapacityHoursPerWeek = request.CapacityHoursPerWeek;
         resource.CostRate = request.CostRate;
         resource.Currency = NormalizeOptionalText(request.Currency);
@@ -146,6 +146,28 @@ public class ExecutionResourceService : IExecutionResourceService
             throw new ConflictException(
                 $"An Execution Resource with code '{normalizedCode}' already exists.");
         }
+    }
+
+    private static string CanonicalizeResourceType(string resourceType)
+    {
+        return Canonicalize(resourceType, ExecutionResourceType.All);
+    }
+
+    private static string CanonicalizeStatus(string status)
+    {
+        return Canonicalize(status, ExecutionResourceStatus.All);
+    }
+
+    /// <summary>
+    /// Stores the approved spelling of a closed value set so persisted data stays comparable
+    /// even when the caller supplies a different casing.
+    /// </summary>
+    private static string Canonicalize(string value, IReadOnlySet<string> allowedValues)
+    {
+        var trimmed = value.Trim();
+
+        return allowedValues.FirstOrDefault(allowed =>
+            string.Equals(allowed, trimmed, StringComparison.OrdinalIgnoreCase)) ?? trimmed;
     }
 
     private static string? NormalizeOptionalText(string? value)

@@ -447,6 +447,60 @@ Capacity calculations shall be deterministic.
 
 ---
 
+## BR-501
+
+Capacity shall only consider Active Working Calendars.
+
+---
+
+## BR-502
+
+Capacity shall ignore non-working weekdays.
+
+---
+
+## BR-503
+
+Capacity shall ignore Holidays.
+
+---
+
+## BR-504
+
+Capacity shall respect configured Working Hours.
+
+---
+
+## BR-505
+
+Capacity shall respect Resource Availability.
+
+---
+
+## BR-506
+
+Capacity shall calculate planned working hours.
+
+---
+
+## BR-507
+
+Historical calculations must remain reproducible from stored operational configuration.
+
+---
+
+## BR-508
+
+If no operational configuration exists, Capacity shall return a validation/business-rule error and shall not fall back to hardcoded Monday–Friday logic.
+
+---
+
+## BR-509
+
+Capacity calculation must be deterministic for the same inputs and configuration snapshot.
+
+---
+
 ## BR-PLAN-003
 
 Capacity never modifies operational information.

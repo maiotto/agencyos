@@ -137,7 +137,7 @@ public static class AllocationConflictCalculation
     private static IEnumerable<AllocationConflictResponse> DetectCapacityExceeded(
         CapacityResponse capacity,
         WorkloadResponse? workload,
-        int periodDays,
+        int _,
         IReadOnlyList<WorkloadAssignmentDistributionItem> assignments)
     {
         var totalPlannedHours = workload?.TotalPlannedHours ?? 0m;
@@ -162,18 +162,18 @@ public static class AllocationConflictCalculation
             yield break;
         }
 
-        var capacityHoursPerWeek = AvailabilityCalculation.DeriveCapacityHoursPerWeek(
-            capacity.TotalCapacityHours,
-            periodDays);
-        var dailyCapacityHours = AvailabilityCalculation.CalculateDailyCapacityHours(capacityHoursPerWeek);
+        var dailyCapacityHours = AvailabilityCalculation.GetDailyCapacityHoursFromCapacity(
+            capacity.OperationalDays);
         var dailyOccupiedHours = AvailabilityCalculation.BuildDailyOccupiedHours(
             capacity.PeriodStartDate,
             capacity.PeriodEndDate,
-            assignments);
+            assignments,
+            dailyCapacityHours.Keys.OrderBy(date => date).ToList());
 
         foreach (var dayEntry in dailyOccupiedHours.OrderBy(entry => entry.Key))
         {
-            if (dayEntry.Value <= dailyCapacityHours)
+            var dayCapacity = dailyCapacityHours.GetValueOrDefault(dayEntry.Key);
+            if (dayEntry.Value <= dayCapacity)
             {
                 continue;
             }
@@ -185,9 +185,9 @@ public static class AllocationConflictCalculation
             yield return CreateConflict(
                 capacity,
                 ConflictType.CapacityExceeded,
-                ClassifyDailyCapacityExceededSeverity(dayEntry.Value, dailyCapacityHours),
+                ClassifyDailyCapacityExceededSeverity(dayEntry.Value, dayCapacity),
                 dayAssignments,
-                $"Daily workload of {decimal.Round(dayEntry.Value, 2, MidpointRounding.AwayFromZero)} hours on {dayEntry.Key:yyyy-MM-dd} exceeds daily capacity of {decimal.Round(dailyCapacityHours, 2, MidpointRounding.AwayFromZero)} hours.",
+                $"Daily workload of {decimal.Round(dayEntry.Value, 2, MidpointRounding.AwayFromZero)} hours on {dayEntry.Key:yyyy-MM-dd} exceeds daily capacity of {decimal.Round(dayCapacity, 2, MidpointRounding.AwayFromZero)} hours.",
                 "Redistribute daily workload or extend assignment dates to stay within daily capacity.");
         }
     }
@@ -196,6 +196,11 @@ public static class AllocationConflictCalculation
         CapacityResponse capacity,
         IReadOnlyList<WorkloadAssignmentDistributionItem> assignments)
     {
+        var operationalDaySet = capacity.OperationalDays
+            .Where(day => day.IsOperationalDay)
+            .Select(day => day.Date)
+            .ToHashSet();
+
         foreach (var assignment in assignments)
         {
             var rangeStart = assignment.PlannedStartDate > capacity.PeriodStartDate
@@ -214,7 +219,7 @@ public static class AllocationConflictCalculation
 
             for (var date = rangeStart; date <= rangeEnd; date = date.AddDays(1))
             {
-                if (!AvailabilityCalculation.IsWorkingDay(date))
+                if (!operationalDaySet.Contains(date))
                 {
                     nonWorkingDays.Add(date);
                 }

@@ -1,14 +1,21 @@
 using AgencyOS.Application;
+using AgencyOS.Api.Audit;
+using AgencyOS.Api.ModelBinding;
 using AgencyOS.Api.Swagger;
+using AgencyOS.Application.Interfaces;
 using AgencyOS.Infrastructure;
 using AgencyOS.Shared.Exceptions;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.ModelBinderProviders.Insert(0, new GuidListModelBinderProvider());
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -30,6 +37,42 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<ClientOpenApiOperationFilter>();
     options.OperationFilter<ContactOpenApiOperationFilter>();
     options.OperationFilter<ContractOpenApiOperationFilter>();
+    options.OperationFilter<MissionOpenApiOperationFilter>();
+    options.OperationFilter<TaskOpenApiOperationFilter>();
+    options.OperationFilter<ExecutionResourceOpenApiOperationFilter>();
+    options.OperationFilter<WorkingCalendarOpenApiOperationFilter>();
+    options.OperationFilter<HolidayOpenApiOperationFilter>();
+    options.OperationFilter<WorkingHoursOpenApiOperationFilter>();
+    options.OperationFilter<ResourceAvailabilityOpenApiOperationFilter>();
+    options.OperationFilter<PlanningTemplateOpenApiOperationFilter>();
+    options.OperationFilter<PortfolioOpenApiOperationFilter>();
+    options.OperationFilter<RecommendationWorkflowOpenApiOperationFilter>();
+    options.OperationFilter<RecommendationOpenApiOperationFilter>();
+    options.OperationFilter<RecommendationHistoryOpenApiOperationFilter>();
+    options.OperationFilter<RecommendationComparisonOpenApiOperationFilter>();
+    options.OperationFilter<DecisionOpenApiOperationFilter>();
+    options.OperationFilter<AuditOpenApiOperationFilter>();
+    options.OperationFilter<AIRecommendationOpenApiOperationFilter>();
+    options.OperationFilter<ExplainabilityOpenApiOperationFilter>();
+    options.OperationFilter<ExecutiveRecommendationSummaryOpenApiOperationFilter>();
+    options.OperationFilter<AssignmentOpenApiOperationFilter>();
+    options.OperationFilter<CapacityOpenApiOperationFilter>();
+    options.OperationFilter<WorkloadOpenApiOperationFilter>();
+    options.OperationFilter<AvailabilityOpenApiOperationFilter>();
+    options.OperationFilter<AllocationConflictOpenApiOperationFilter>();
+    options.OperationFilter<DeliveryStrategyOpenApiOperationFilter>();
+    options.OperationFilter<DecisionProfileOpenApiOperationFilter>();
+    options.OperationFilter<CompanyOpenApiOperationFilter>();
+    options.OperationFilter<EnterpriseDashboardOpenApiOperationFilter>();
+    options.OperationFilter<PortfolioAnalyticsOpenApiOperationFilter>();
+    options.OperationFilter<CrossPortfolioPlanningOpenApiOperationFilter>();
+    options.OperationFilter<MyWorkDashboardOpenApiOperationFilter>();
+    options.OperationFilter<PlanningWorkspaceOpenApiOperationFilter>();
+    options.OperationFilter<RecommendationWorkspaceOpenApiOperationFilter>();
+    options.OperationFilter<DecisionWorkspaceOpenApiOperationFilter>();
+    options.OperationFilter<ExecutiveWorkspaceOpenApiOperationFilter>();
+    options.OperationFilter<NotificationOpenApiOperationFilter>();
+    options.OperationFilter<PersonalProductivityDashboardOpenApiOperationFilter>();
 });
 
 builder.Services.AddFluentValidationAutoValidation();
@@ -37,6 +80,21 @@ builder.Services.AddFluentValidationClientsideAdapters();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
+builder.Services.RemoveAll<IAuditContext>();
+builder.Services.AddScoped<IAuditContext, HttpAuditContext>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendDev", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddProblemDetails();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -171,6 +229,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("FrontendDev");
+app.UseMiddleware<AuditCorrelationMiddleware>();
+app.UseMiddleware<CompanyContextMiddleware>();
 app.UseHttpsRedirection();
 app.MapControllers();
 

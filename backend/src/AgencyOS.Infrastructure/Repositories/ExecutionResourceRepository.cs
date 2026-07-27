@@ -36,11 +36,11 @@ public class ExecutionResourceRepository : IExecutionResourceRepository
         Guid? excludeResourceId = null,
         CancellationToken cancellationToken = default)
     {
-        var normalizedCode = code.Trim();
+        var normalizedCode = code.Trim().ToLowerInvariant();
 
         var query = _context.ExecutionResources
             .AsNoTracking()
-            .Where(r => r.Code == normalizedCode);
+            .Where(r => r.Code.ToLower() == normalizedCode);
 
         if (excludeResourceId.HasValue)
         {

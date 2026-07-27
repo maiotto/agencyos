@@ -10,6 +10,8 @@ public class RankDeliveryStrategyResponse
 
     public string CompanyDecisionProfileName { get; set; } = string.Empty;
 
+    public int CompanyDecisionProfileVersion { get; set; }
+
     public IReadOnlyList<RankedDeliveryStrategyResponse> RankedStrategies { get; set; } =
         Array.Empty<RankedDeliveryStrategyResponse>();
 

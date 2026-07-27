@@ -27,9 +27,11 @@ It consolidates all strategic, architectural and engineering decisions taken dur
 - Sprint 9
 - Sprint 10
 
-and supersedes previous baseline versions.
+and reflects the official project progress reached through Phase 2 (Commercial Domain certification), Phase 3 (Operations Domain certification), and Phase 4 (Analytics & Decision Engine certification).
 
-This document becomes the official reference for future development.
+Phase 4 has been completed. Analytics & Decision Engine certification has been completed. The next planned milestone is Frontend MVP.
+
+This document supersedes previous baseline versions and remains the official reference for future development.
 
 ---
 
@@ -259,6 +261,22 @@ These capabilities belong to future releases.
 
 # Current Program Status
 
+Commercial Domain
+
+Status: Certified
+
+Operations Domain
+
+Status: Certified
+
+Current Phase
+
+Phase 4 Completed
+
+Next Phase
+
+Frontend MVP
+
 Business Vision
 
 Completed
@@ -290,6 +308,10 @@ Under Consolidation
 Frontend
 
 Not Started
+
+Analytics
+
+Completed
 
 Decision Intelligence
 
@@ -1449,6 +1471,22 @@ Overall Status
 
 Stable
 
+Commercial Domain
+
+Status: Certified
+
+Operations Domain
+
+Status: Certified
+
+Current Phase
+
+Phase 4 Completed
+
+Next Phase
+
+Frontend MVP
+
 Business Vision
 
 Completed
@@ -1489,11 +1527,25 @@ Frontend
 
 Not Started
 
+Analytics
+
+Completed
+
 Decision Intelligence
 
 Architecture Completed
 
 Implementation Pending
+
+Certification Status
+
+Commercial Domain — Certified
+
+Operations Domain — Certified
+
+Analytics — Certified
+
+Decision Engine — Certified
 
 ---
 
@@ -1955,6 +2007,8 @@ Any modification to this document requires formal review and approval by the app
 |---------|------|-------------|
 | 1.0 | 2026-07-21 | Initial MVP Baseline |
 | 2.0 | 2026-07 | Baseline fully reconciled after Audit 01–14 and documentation consolidation |
+| 2.0 | 2026-07-26 | Phase 3 completion status update — Operations Domain certified; next phase Phase 4 – Analytics & Decision Engine |
+| 2.0 | 2026-07-26 | Phase 4 completion status update — Analytics & Decision Engine certified; next milestone Frontend MVP |
 
 ---
 
