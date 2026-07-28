@@ -52,7 +52,7 @@ public class EnterpriseWorkloadServiceTests
     public async Task BuildAsync_UsesLiveWorkloadEngine_WhenPeriodProvided()
     {
         var portfolios = new List<Portfolio> { CreatePortfolio(workload: 50m) };
-        var periodStart = DateOnly.FromDateTime(DateTime.UtcNow);
+        var periodStart = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var periodEnd = periodStart.AddDays(30);
 
         var liveSummary = new WorkloadSummaryResponse
@@ -81,8 +81,8 @@ public class EnterpriseWorkloadServiceTests
             AgencyOSCompanies.DefaultCompanyId,
             $"Portfolio {Guid.NewGuid():N}",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             [(Guid.NewGuid(), 1)],
             DateTimeOffset.UtcNow);
@@ -104,8 +104,8 @@ public class EnterpriseWorkloadServiceTests
             AgencyOSCompanies.DefaultCompanyId,
             $"Portfolio {Guid.NewGuid():N}",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             [(Guid.NewGuid(), 1)],
             DateTimeOffset.UtcNow);

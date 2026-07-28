@@ -51,51 +51,41 @@ public class MyWorkDashboardService : IMyWorkDashboardService
         var (from, to) = ResolveDateWindow(parameters);
         var (periodStart, periodEnd) = ResolvePeriodWindow(parameters);
 
-        var missionsTask = _aggregationService.GetMissionsAsync(identity.ExecutionResourceId, cancellationToken);
-        var tasksTask = _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
-        var recommendationsTask = _aggregationService.GetRecommendationsAsync(
+        var missions = await _aggregationService.GetMissionsAsync(identity.ExecutionResourceId, cancellationToken);
+        var tasks = await _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
+        var recommendations = await _aggregationService.GetRecommendationsAsync(
             identity.CompanyId,
             identity.UserId,
             cancellationToken);
-        var decisionsTask = _aggregationService.GetDecisionsAsync(
+        var decisions = await _aggregationService.GetDecisionsAsync(
             identity.CompanyId,
             identity.UserId,
             cancellationToken);
-        var capacityTask = _aggregationService.GetCapacityAsync(
+        var capacity = await _aggregationService.GetCapacityAsync(
             identity.ExecutionResourceId,
             periodStart,
             periodEnd,
             cancellationToken);
-        var workloadTask = _aggregationService.GetWorkloadAsync(
+        var workload = await _aggregationService.GetWorkloadAsync(
             identity.ExecutionResourceId,
             periodStart,
             periodEnd,
             cancellationToken);
-        var activityTask = _timelineService.GetTimelineAsync(
+        var activity = await _timelineService.GetTimelineAsync(
             identity.UserId,
             identity.CompanyId,
             from,
             to,
             cancellationToken);
 
-        await Task.WhenAll(
-            missionsTask,
-            tasksTask,
-            recommendationsTask,
-            decisionsTask,
-            capacityTask,
-            workloadTask,
-            activityTask);
-
-        var tasks = tasksTask.Result;
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var kpis = _kpiService.Calculate(
-            missionsTask.Result,
+            missions,
             tasks,
-            recommendationsTask.Result,
-            decisionsTask.Result,
-            capacityTask.Result,
-            workloadTask.Result,
+            recommendations,
+            decisions,
+            capacity,
+            workload,
             today,
             DefaultUpcomingDeadlineWindowDays);
         var (overdue, upcoming) = BuildDeadlines(tasks, today);
@@ -111,15 +101,15 @@ public class MyWorkDashboardService : IMyWorkDashboardService
             PeriodStart = periodStart,
             PeriodEnd = periodEnd,
             Kpis = kpis,
-            Capacity = capacityTask.Result,
-            Workload = workloadTask.Result,
-            Missions = missionsTask.Result,
+            Capacity = capacity,
+            Workload = workload,
+            Missions = missions,
             Tasks = tasks,
-            Recommendations = recommendationsTask.Result,
-            Decisions = decisionsTask.Result,
+            Recommendations = recommendations,
+            Decisions = decisions,
             OverdueTasks = overdue,
             UpcomingDeadlines = upcoming,
-            Activity = activityTask.Result
+            Activity = activity
         };
     }
 
@@ -130,37 +120,35 @@ public class MyWorkDashboardService : IMyWorkDashboardService
         var identity = await ResolveIdentityAsync(parameters, cancellationToken);
         var (periodStart, periodEnd) = ResolvePeriodWindow(parameters);
 
-        var missionsTask = _aggregationService.GetMissionsAsync(identity.ExecutionResourceId, cancellationToken);
-        var tasksTask = _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
-        var recommendationsTask = _aggregationService.GetRecommendationsAsync(
+        var missions = await _aggregationService.GetMissionsAsync(identity.ExecutionResourceId, cancellationToken);
+        var tasks = await _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
+        var recommendations = await _aggregationService.GetRecommendationsAsync(
             identity.CompanyId,
             identity.UserId,
             cancellationToken);
-        var decisionsTask = _aggregationService.GetDecisionsAsync(
+        var decisions = await _aggregationService.GetDecisionsAsync(
             identity.CompanyId,
             identity.UserId,
             cancellationToken);
-        var capacityTask = _aggregationService.GetCapacityAsync(
+        var capacity = await _aggregationService.GetCapacityAsync(
             identity.ExecutionResourceId,
             periodStart,
             periodEnd,
             cancellationToken);
-        var workloadTask = _aggregationService.GetWorkloadAsync(
+        var workload = await _aggregationService.GetWorkloadAsync(
             identity.ExecutionResourceId,
             periodStart,
             periodEnd,
             cancellationToken);
 
-        await Task.WhenAll(missionsTask, tasksTask, recommendationsTask, decisionsTask, capacityTask, workloadTask);
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var kpis = _kpiService.Calculate(
-            missionsTask.Result,
-            tasksTask.Result,
-            recommendationsTask.Result,
-            decisionsTask.Result,
-            capacityTask.Result,
-            workloadTask.Result,
+            missions,
+            tasks,
+            recommendations,
+            decisions,
+            capacity,
+            workload,
             today,
             DefaultUpcomingDeadlineWindowDays);
 
@@ -170,13 +158,13 @@ public class MyWorkDashboardService : IMyWorkDashboardService
             UserId = identity.UserId,
             ExecutionResourceId = identity.ExecutionResourceId,
             GeneratedAt = DateTimeOffset.UtcNow,
-            MissionCount = missionsTask.Result.Count,
-            TaskCount = tasksTask.Result.Count,
-            RecommendationCount = recommendationsTask.Result.Count,
-            DecisionCount = decisionsTask.Result.Count,
+            MissionCount = missions.Count,
+            TaskCount = tasks.Count,
+            RecommendationCount = recommendations.Count,
+            DecisionCount = decisions.Count,
             Kpis = kpis,
-            Capacity = capacityTask.Result,
-            Workload = workloadTask.Result
+            Capacity = capacity,
+            Workload = workload
         };
     }
 
@@ -186,7 +174,7 @@ public class MyWorkDashboardService : IMyWorkDashboardService
     {
         var identity = await ResolveIdentityAsync(parameters, cancellationToken);
         var tasks = await _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var (overdue, upcoming) = BuildDeadlines(tasks, today);
 
         return new MyWorkTasksResponse
@@ -252,37 +240,35 @@ public class MyWorkDashboardService : IMyWorkDashboardService
         var identity = await ResolveIdentityAsync(parameters, cancellationToken);
         var (periodStart, periodEnd) = ResolvePeriodWindow(parameters);
 
-        var missionsTask = _aggregationService.GetMissionsAsync(identity.ExecutionResourceId, cancellationToken);
-        var tasksTask = _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
-        var recommendationsTask = _aggregationService.GetRecommendationsAsync(
+        var missions = await _aggregationService.GetMissionsAsync(identity.ExecutionResourceId, cancellationToken);
+        var tasks = await _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
+        var recommendations = await _aggregationService.GetRecommendationsAsync(
             identity.CompanyId,
             identity.UserId,
             cancellationToken);
-        var decisionsTask = _aggregationService.GetDecisionsAsync(
+        var decisions = await _aggregationService.GetDecisionsAsync(
             identity.CompanyId,
             identity.UserId,
             cancellationToken);
-        var capacityTask = _aggregationService.GetCapacityAsync(
+        var capacity = await _aggregationService.GetCapacityAsync(
             identity.ExecutionResourceId,
             periodStart,
             periodEnd,
             cancellationToken);
-        var workloadTask = _aggregationService.GetWorkloadAsync(
+        var workload = await _aggregationService.GetWorkloadAsync(
             identity.ExecutionResourceId,
             periodStart,
             periodEnd,
             cancellationToken);
 
-        await Task.WhenAll(missionsTask, tasksTask, recommendationsTask, decisionsTask, capacityTask, workloadTask);
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         return _kpiService.Calculate(
-            missionsTask.Result,
-            tasksTask.Result,
-            recommendationsTask.Result,
-            decisionsTask.Result,
-            capacityTask.Result,
-            workloadTask.Result,
+            missions,
+            tasks,
+            recommendations,
+            decisions,
+            capacity,
+            workload,
             today,
             DefaultUpcomingDeadlineWindowDays);
     }
@@ -344,7 +330,7 @@ public class MyWorkDashboardService : IMyWorkDashboardService
     private static (DateOnly PeriodStart, DateOnly PeriodEnd) ResolvePeriodWindow(
         MyWorkDashboardQueryParameters parameters)
     {
-        var periodEnd = parameters.PeriodEnd ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var periodEnd = parameters.PeriodEnd ?? DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var periodStart = parameters.PeriodStart ?? periodEnd.AddDays(-DefaultWindowDays);
         return (periodStart, periodEnd);
     }

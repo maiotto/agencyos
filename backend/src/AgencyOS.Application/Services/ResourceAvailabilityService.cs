@@ -100,7 +100,7 @@ public class ResourceAvailabilityService : IResourceAvailabilityService
             request.WorkingHoursId,
             cancellationToken);
 
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         try
         {
@@ -186,7 +186,7 @@ public class ResourceAvailabilityService : IResourceAvailabilityService
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var availability = await GetOrThrowAsync(id, cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         try
         {

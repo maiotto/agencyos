@@ -66,7 +66,7 @@ public class ExecutiveWorkspaceControllerHttpTests : IClassFixture<ExecutiveWork
     [Fact]
     public async Task GetWorkspace_ReturnsBadRequest_WhenPeriodEndBeforePeriodStart()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var response = await _factory.CreateClient().GetAsync(
             $"/executive-workspace?periodStart={today:O}&periodEnd={today.AddDays(-1):O}");
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);

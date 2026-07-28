@@ -34,8 +34,8 @@ public class CrossPortfolioConflictDetectionServiceTests
 
         var result = await service.DetectAsync(
             [portfolioOne, portfolioTwo],
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime));
 
         Assert.Equal(1, result.PortfolioConflictCount);
         var conflict = Assert.Single(result.PortfolioConflicts);
@@ -54,8 +54,8 @@ public class CrossPortfolioConflictDetectionServiceTests
 
         var result = await service.DetectAsync(
             [portfolioOne, portfolioTwo],
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime));
 
         Assert.Equal(0, result.PortfolioConflictCount);
         Assert.Empty(result.PortfolioConflicts);
@@ -88,8 +88,8 @@ public class CrossPortfolioConflictDetectionServiceTests
 
         var result = await service.DetectAsync(
             [portfolio],
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime));
 
         Assert.Equal(1, result.ResourceConflictCount);
         var item = Assert.Single(result.ResourceConflicts);
@@ -105,8 +105,8 @@ public class CrossPortfolioConflictDetectionServiceTests
 
         var result = await service.DetectAsync(
             [portfolio],
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime));
 
         Assert.Equal("None", result.Severity);
         Assert.Equal(0, result.PortfolioConflictCount);
@@ -123,8 +123,8 @@ public class CrossPortfolioConflictDetectionServiceTests
 
         var result = await service.DetectAsync(
             [portfolioOne, portfolioTwo],
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)));
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime));
 
         Assert.Equal("Medium", result.Severity);
     }
@@ -134,8 +134,8 @@ public class CrossPortfolioConflictDetectionServiceTests
             AgencyOSCompanies.DefaultCompanyId,
             $"Portfolio {Guid.NewGuid():N}",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             missions,
             DateTimeOffset.UtcNow);

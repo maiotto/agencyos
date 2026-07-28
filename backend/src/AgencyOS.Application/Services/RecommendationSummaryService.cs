@@ -109,22 +109,20 @@ public class RecommendationSummaryService : IRecommendationSummaryService
         Guid companyId,
         CancellationToken cancellationToken = default)
     {
-        var companyRecommendationIdsTask = _recommendationService.GetByCompanyIdAsync(
+        var companyRecommendations = await _recommendationService.GetByCompanyIdAsync(
             companyId,
             new RecommendationQueryParameters { CompanyId = companyId, IncludeArchived = true },
             cancellationToken);
 
-        var workflowsTask = _recommendationWorkflowService.GetAllAsync(
+        var workflows = await _recommendationWorkflowService.GetAllAsync(
             new RecommendationWorkflowQueryParameters { Status = RecommendationWorkflowStatus.PendingApproval },
             cancellationToken);
 
-        await Task.WhenAll(companyRecommendationIdsTask, workflowsTask);
-
-        var companyRecommendationIds = companyRecommendationIdsTask.Result
+        var companyRecommendationIds = companyRecommendations
             .Select(recommendation => recommendation.Id)
             .ToHashSet();
 
-        var cards = workflowsTask.Result
+        var cards = workflows
             .Where(workflow =>
                 workflow.CompanyId == companyId
                 || (workflow.CompanyId is null && companyRecommendationIds.Contains(workflow.RecommendationId)))
@@ -269,17 +267,15 @@ public class RecommendationSummaryService : IRecommendationSummaryService
         DateTimeOffset? to,
         CancellationToken cancellationToken = default)
     {
-        var aiTask = _aiRecommendationService.GetAllAsync(
+        var ai = await _aiRecommendationService.GetAllAsync(
             new AIRecommendationQueryParameters { CompanyId = companyId, GeneratedFrom = from, GeneratedTo = to },
             cancellationToken);
 
-        var explainabilityTask = _explainabilityService.GetAllAsync(
+        var explainability = await _explainabilityService.GetAllAsync(
             new ExplainabilityQueryParameters { CompanyId = companyId, GeneratedFrom = from, GeneratedTo = to },
             cancellationToken);
 
-        await Task.WhenAll(aiTask, explainabilityTask);
-
-        var aiCards = aiTask.Result
+        var aiCards = ai
             .OrderByDescending(item => item.GeneratedAt)
             .Take(AiCardLimit)
             .Select(item => new AIRecommendationCardResponse
@@ -294,7 +290,7 @@ public class RecommendationSummaryService : IRecommendationSummaryService
             })
             .ToList();
 
-        var explainabilityCards = explainabilityTask.Result
+        var explainabilityCards = explainability
             .OrderByDescending(item => item.GeneratedAt)
             .Take(ExplainabilityCardLimit)
             .Select(item => new ExplainabilityCardResponse

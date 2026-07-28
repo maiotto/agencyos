@@ -266,7 +266,7 @@ public class PlanningTemplateService : IPlanningTemplateService
             requireActive: true,
             cancellationToken);
 
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         DateOnly periodStart;
         DateOnly periodEnd;
 

@@ -22,13 +22,16 @@ Operational Workspace
 
 Result
 
-Production-ready MVP baseline established.
+Backend established.
 
 ---
 
 # Current Phase
 
 Guided Test Drive
+
+Status
+Completed
 
 Objective
 
@@ -42,6 +45,8 @@ Capture improvements
 
 No feature development during this phase.
 
+Release Approved
+
 ---
 
 # Release 1.2
@@ -49,9 +54,3 @@ No feature development during this phase.
 Status
 
 Not Started
-
-Planning will begin only after approval of the Guided Test Drive.
-
-Scope
-
-To be defined after Release 1.1 validation.

@@ -70,7 +70,7 @@ public class PersonalDashboardAggregationService : IPersonalDashboardAggregation
     {
         var activeWork = await LoadActiveWorkAsync(executionResourceId, cancellationToken);
         var missionNames = activeWork.Missions.ToDictionary(mission => mission.Id, mission => mission.Name);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         return activeWork.Tasks
             .Select(task =>

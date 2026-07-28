@@ -33,19 +33,11 @@ public class ExecutiveOverviewService : IExecutiveOverviewService
     {
         var dashboardParameters = ExecutiveWorkspaceMapping.ToDashboardParameters(companyId, parameters);
 
-        var summaryTask = _enterpriseDashboardService.GetSummaryAsync(dashboardParameters, cancellationToken);
-        var portfolioTask = _enterpriseDashboardService.GetPortfolioAsync(dashboardParameters, cancellationToken);
-        var capacityTask = _enterpriseDashboardService.GetCapacityAsync(dashboardParameters, cancellationToken);
-        var workloadTask = _enterpriseDashboardService.GetWorkloadAsync(dashboardParameters, cancellationToken);
-        var auditTask = _enterpriseDashboardService.GetAuditAsync(dashboardParameters, cancellationToken);
-
-        await Task.WhenAll(summaryTask, portfolioTask, capacityTask, workloadTask, auditTask);
-
-        var summary = summaryTask.Result;
-        var portfolio = portfolioTask.Result;
-        var capacity = capacityTask.Result;
-        var workload = workloadTask.Result;
-        var audit = auditTask.Result;
+        var summary = await _enterpriseDashboardService.GetSummaryAsync(dashboardParameters, cancellationToken);
+        var portfolio = await _enterpriseDashboardService.GetPortfolioAsync(dashboardParameters, cancellationToken);
+        var capacity = await _enterpriseDashboardService.GetCapacityAsync(dashboardParameters, cancellationToken);
+        var workload = await _enterpriseDashboardService.GetWorkloadAsync(dashboardParameters, cancellationToken);
+        var audit = await _enterpriseDashboardService.GetAuditAsync(dashboardParameters, cancellationToken);
 
         var overallHealth = _dashboardHealthCalculationService.CalculateOverall(
             [summary.OverallHealth.Status, portfolio.OverallHealth.Status]);

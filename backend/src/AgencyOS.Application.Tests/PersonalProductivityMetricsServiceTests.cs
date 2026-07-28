@@ -161,8 +161,8 @@ public class PersonalProductivityDashboardQueryParametersValidatorTests
         {
             From = DateTimeOffset.UtcNow.AddDays(-7),
             To = DateTimeOffset.UtcNow,
-            PeriodStart = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-7)),
-            PeriodEnd = DateOnly.FromDateTime(DateTime.UtcNow)
+            PeriodStart = DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(-7).UtcDateTime),
+            PeriodEnd = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime)
         });
 
         Assert.True(result.IsValid);

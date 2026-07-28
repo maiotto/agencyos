@@ -126,8 +126,8 @@ public class PortfolioTrendAnalysisServiceTests
             CompanyId,
             "Scoped Portfolio",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             [(missionId, 1)],
             DateTimeOffset.UtcNow);
@@ -148,8 +148,8 @@ public class PortfolioTrendAnalysisServiceTests
             new PortfolioAnalyticsQueryParameters
             {
                 PortfolioId = portfolio.Id,
-                PeriodStart = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)),
-                PeriodEnd = DateOnly.FromDateTime(DateTime.UtcNow)
+                PeriodStart = DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(-30).UtcDateTime),
+                PeriodEnd = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime)
             });
 
         Assert.Equal(portfolio.Id, trends.PortfolioId);
@@ -179,8 +179,8 @@ public class PortfolioTrendAnalysisServiceTests
             Guid.NewGuid(),
             "Other Company Portfolio",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             [(missionId, 1)],
             DateTimeOffset.UtcNow);

@@ -422,8 +422,8 @@ public class DashboardAggregationServiceTests
             CompanyId,
             $"Portfolio {Guid.NewGuid():N}",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             [(Guid.NewGuid(), 1)],
             DateTimeOffset.UtcNow);
@@ -465,8 +465,8 @@ public class DashboardAggregationServiceTests
         CapacityHistory.Create(
             Guid.NewGuid(),
             CompanyId,
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)),
-            DateOnly.FromDateTime(DateTime.UtcNow),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(-30).UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
             20,
             2,
             18,
@@ -486,8 +486,8 @@ public class DashboardAggregationServiceTests
         WorkloadHistory.Create(
             Guid.NewGuid(),
             CompanyId,
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(-30)),
-            DateOnly.FromDateTime(DateTime.UtcNow),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(-30).UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
             allocatedHours,
             capacityHours,
             workload,

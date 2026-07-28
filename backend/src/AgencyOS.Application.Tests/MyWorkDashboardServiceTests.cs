@@ -251,7 +251,7 @@ public class MyWorkDashboardServiceTests
     [Fact]
     public async Task GetDashboardAsync_SplitsOverdueAndUpcomingTasksFromTaskList()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var overdueTask = new MyWorkTaskCardResponse
         {
             Id = Guid.NewGuid(),

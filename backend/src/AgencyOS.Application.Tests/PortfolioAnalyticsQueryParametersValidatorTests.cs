@@ -36,7 +36,7 @@ public class PortfolioAnalyticsQueryParametersValidatorTests
     [Fact]
     public void Validate_RejectsPeriodEndEarlierThanPeriodStart()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(
             new PortfolioAnalyticsQueryParameters { PeriodStart = date, PeriodEnd = date.AddDays(-1) });
 
@@ -46,7 +46,7 @@ public class PortfolioAnalyticsQueryParametersValidatorTests
     [Fact]
     public void Validate_AcceptsPeriodStartEqualToPeriodEnd()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(
             new PortfolioAnalyticsQueryParameters { PeriodStart = date, PeriodEnd = date });
 
@@ -133,7 +133,7 @@ public class PortfolioCompareQueryParametersValidatorTests
     [Fact]
     public void Validate_RejectsPeriodEndEarlierThanPeriodStart()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(new PortfolioCompareQueryParameters
         {
             LeftPortfolioId = Guid.NewGuid(),

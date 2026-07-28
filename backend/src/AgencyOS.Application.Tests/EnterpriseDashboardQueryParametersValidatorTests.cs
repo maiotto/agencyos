@@ -37,7 +37,7 @@ public class EnterpriseDashboardQueryParametersValidatorTests
     [Fact]
     public void Validate_AcceptsPeriodStartEqualToPeriodEnd()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(
             new EnterpriseDashboardQueryParameters { PeriodStart = date, PeriodEnd = date });
 
@@ -47,7 +47,7 @@ public class EnterpriseDashboardQueryParametersValidatorTests
     [Fact]
     public void Validate_RejectsPeriodEndEarlierThanPeriodStart()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(
             new EnterpriseDashboardQueryParameters { PeriodStart = date, PeriodEnd = date.AddDays(-1) });
 
@@ -67,7 +67,7 @@ public class EnterpriseDashboardQueryParametersValidatorTests
     public void Validate_AcceptsOnlyPeriodStartSet()
     {
         var result = _validator.Validate(
-            new EnterpriseDashboardQueryParameters { PeriodStart = DateOnly.FromDateTime(DateTime.UtcNow) });
+            new EnterpriseDashboardQueryParameters { PeriodStart = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime) });
 
         Assert.True(result.IsValid);
     }
@@ -76,7 +76,7 @@ public class EnterpriseDashboardQueryParametersValidatorTests
     public void Validate_AcceptsValidRangeForBothWindows()
     {
         var now = DateTimeOffset.UtcNow;
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(new EnterpriseDashboardQueryParameters
         {
             From = now.AddDays(-30),

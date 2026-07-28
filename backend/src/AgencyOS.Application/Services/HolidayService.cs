@@ -81,7 +81,7 @@ public class HolidayService : IHolidayService
         CancellationToken cancellationToken = default)
     {
         var holiday = await GetHolidayOrThrowAsync(id, cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         try
         {
@@ -155,7 +155,7 @@ public class HolidayService : IHolidayService
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var holiday = await GetHolidayOrThrowAsync(id, cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         try
         {

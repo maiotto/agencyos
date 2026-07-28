@@ -164,107 +164,82 @@ public class PersonalProductivityDashboardService : IPersonalProductivityDashboa
         var previousFrom = from.AddDays(-(to - from).TotalDays);
         var previousTo = from.AddTicks(-1);
 
-        var missionsTask = _aggregationService.GetMissionsAsync(identity.ExecutionResourceId, cancellationToken);
-        var tasksTask = _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
-        var recommendationsTask = _aggregationService.GetRecommendationsAsync(
+        var missions = await _aggregationService.GetMissionsAsync(identity.ExecutionResourceId, cancellationToken);
+        var tasks = await _aggregationService.GetTasksAsync(identity.ExecutionResourceId, cancellationToken);
+        var recommendations = await _aggregationService.GetRecommendationsAsync(
             identity.CompanyId,
             identity.UserId,
             cancellationToken);
-        var decisionsTask = _aggregationService.GetDecisionsAsync(
+        var decisions = await _aggregationService.GetDecisionsAsync(
             identity.CompanyId,
             identity.UserId,
             cancellationToken);
-        var capacityTask = _aggregationService.GetCapacityAsync(
+        var capacity = await _aggregationService.GetCapacityAsync(
             identity.ExecutionResourceId,
             periodStart,
             periodEnd,
             cancellationToken);
-        var workloadTask = _aggregationService.GetWorkloadAsync(
+        var workload = await _aggregationService.GetWorkloadAsync(
             identity.ExecutionResourceId,
             periodStart,
             periodEnd,
             cancellationToken);
-        var activityTask = _timelineService.GetTimelineAsync(
+        var activity = await _timelineService.GetTimelineAsync(
             identity.UserId,
             identity.CompanyId,
             from,
             to,
             cancellationToken);
-        var completedTask = LoadCompletedDecisionsAsync(identity, from, to, cancellationToken);
+        var completed = await LoadCompletedDecisionsAsync(identity, from, to, cancellationToken);
 
-        Task<MyWorkCapacitySummaryResponse>? previousCapacityTask = null;
-        Task<MyWorkWorkloadSummaryResponse>? previousWorkloadTask = null;
-        Task<IReadOnlyList<MyWorkActivityItemResponse>>? previousActivityTask = null;
-        Task<IReadOnlyList<PersonalProductivityActivityItemResponse>>? previousCompletedTask = null;
+        MyWorkCapacitySummaryResponse? previousCapacity = null;
+        MyWorkWorkloadSummaryResponse? previousWorkload = null;
+        IReadOnlyList<MyWorkActivityItemResponse>? previousActivity = null;
+        IReadOnlyList<PersonalProductivityActivityItemResponse>? previousCompleted = null;
 
         if (includePreviousPeriod)
         {
-            previousCapacityTask = _aggregationService.GetCapacityAsync(
+            previousCapacity = await _aggregationService.GetCapacityAsync(
                 identity.ExecutionResourceId,
                 previousStart,
                 previousEnd,
                 cancellationToken);
-            previousWorkloadTask = _aggregationService.GetWorkloadAsync(
+            previousWorkload = await _aggregationService.GetWorkloadAsync(
                 identity.ExecutionResourceId,
                 previousStart,
                 previousEnd,
                 cancellationToken);
-            previousActivityTask = _timelineService.GetTimelineAsync(
+            previousActivity = await _timelineService.GetTimelineAsync(
                 identity.UserId,
                 identity.CompanyId,
                 previousFrom,
                 previousTo,
                 cancellationToken);
-            previousCompletedTask = LoadCompletedDecisionsAsync(
+            previousCompleted = await LoadCompletedDecisionsAsync(
                 identity,
                 previousFrom,
                 previousTo,
                 cancellationToken);
         }
 
-        var awaitables = new List<Task>
-        {
-            missionsTask,
-            tasksTask,
-            recommendationsTask,
-            decisionsTask,
-            capacityTask,
-            workloadTask,
-            activityTask,
-            completedTask
-        };
-
-        if (includePreviousPeriod)
-        {
-            awaitables.Add(previousCapacityTask!);
-            awaitables.Add(previousWorkloadTask!);
-            awaitables.Add(previousActivityTask!);
-            awaitables.Add(previousCompletedTask!);
-        }
-
-        await Task.WhenAll(awaitables);
-
-        var tasks = tasksTask.Result;
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var myWorkKpis = _kpiService.Calculate(
-            missionsTask.Result,
+            missions,
             tasks,
-            recommendationsTask.Result,
-            decisionsTask.Result,
-            capacityTask.Result,
-            workloadTask.Result,
+            recommendations,
+            decisions,
+            capacity,
+            workload,
             today,
             DefaultUpcomingDeadlineWindowDays);
 
-        var completed = completedTask.Result;
-        var activity = activityTask.Result;
         var kpis = _metricsService.BuildKpis(myWorkKpis, completed.Count, activity.Count);
         var performance = _metricsService.BuildPerformance(kpis, tasks);
-        var statistics = _metricsService.BuildStatistics(kpis, tasks, capacityTask.Result, workloadTask.Result);
+        var statistics = _metricsService.BuildStatistics(kpis, tasks, capacity, workload);
         var activitySummary = _activitySummaryService.Build(
             tasks,
-            recommendationsTask.Result,
-            decisionsTask.Result,
+            recommendations,
+            decisions,
             completed,
             activity);
 
@@ -274,14 +249,14 @@ public class PersonalProductivityDashboardService : IPersonalProductivityDashboa
                 periodEnd,
                 previousStart,
                 previousEnd,
-                capacityTask.Result,
-                workloadTask.Result,
-                previousCapacityTask!.Result,
-                previousWorkloadTask!.Result,
+                capacity,
+                workload,
+                previousCapacity!,
+                previousWorkload!,
                 activity.Count,
-                previousActivityTask!.Result.Count,
+                previousActivity!.Count,
                 completed.Count,
-                previousCompletedTask!.Result.Count)
+                previousCompleted!.Count)
             : new PersonalProductivityTrendsResponse
             {
                 CurrentPeriodStart = periodStart,
@@ -297,8 +272,8 @@ public class PersonalProductivityDashboardService : IPersonalProductivityDashboa
             periodStart,
             periodEnd,
             kpis,
-            capacityTask.Result,
-            workloadTask.Result,
+            capacity,
+            workload,
             activitySummary,
             performance,
             statistics,
@@ -454,7 +429,7 @@ public class PersonalProductivityDashboardService : IPersonalProductivityDashboa
     private static (DateOnly PeriodStart, DateOnly PeriodEnd) ResolvePeriodWindow(
         PersonalProductivityDashboardQueryParameters parameters)
     {
-        var periodEnd = parameters.PeriodEnd ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var periodEnd = parameters.PeriodEnd ?? DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var periodStart = parameters.PeriodStart ?? periodEnd.AddDays(-(DefaultWindowDays - 1));
         return (periodStart, periodEnd);
     }

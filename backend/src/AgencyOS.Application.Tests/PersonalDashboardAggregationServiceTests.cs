@@ -168,7 +168,7 @@ public class PersonalDashboardAggregationServiceTests
         var resourceId = Guid.NewGuid();
         var missionId = Guid.NewGuid();
         var taskId = Guid.NewGuid();
-        var pastDate = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-5);
+        var pastDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime).AddDays(-5);
 
         _assignmentRepository
             .Setup(repository => repository.GetAllAsync(It.IsAny<AssignmentQueryParameters>(), It.IsAny<CancellationToken>()))

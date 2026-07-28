@@ -35,7 +35,7 @@ public sealed class CompanyContextMiddleware
 
             try
             {
-                await companyContextService.SelectAsync(companyId, context.RequestAborted);
+                await companyContextService.BindContextAsync(companyId, context.RequestAborted);
             }
             catch (NotFoundException ex)
             {

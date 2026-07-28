@@ -44,28 +44,15 @@ public class ExecutiveWorkspaceService : IExecutiveWorkspaceService
         var companyId = await ResolveAndValidateCompanyIdAsync(parameters, cancellationToken);
         var resolved = ResolveWindow(parameters);
 
-        var overviewTask = _executiveOverviewService.GetOverviewAsync(companyId, resolved, cancellationToken);
-        var enterpriseTask = _executiveAggregationService.BuildEnterpriseAsync(companyId, resolved, cancellationToken);
-        var portfoliosTask = _executiveAggregationService.BuildPortfoliosAsync(companyId, resolved, cancellationToken);
-        var recommendationsTask = _executiveAggregationService.BuildRecommendationsAsync(companyId, resolved, cancellationToken);
-        var decisionsTask = _executiveAggregationService.BuildDecisionsAsync(companyId, resolved, cancellationToken);
-        var capacityTask = _executiveAggregationService.BuildCapacityAsync(companyId, resolved, cancellationToken);
-        var workloadTask = _executiveAggregationService.BuildWorkloadAsync(companyId, resolved, cancellationToken);
-        var aiTask = _executiveAggregationService.BuildAiAsync(companyId, resolved, cancellationToken);
-        var auditTask = _executiveAggregationService.BuildAuditAsync(companyId, resolved, cancellationToken);
-
-        await Task.WhenAll(
-            overviewTask,
-            enterpriseTask,
-            portfoliosTask,
-            recommendationsTask,
-            decisionsTask,
-            capacityTask,
-            workloadTask,
-            aiTask,
-            auditTask);
-
-        var overview = overviewTask.Result;
+        var overview = await _executiveOverviewService.GetOverviewAsync(companyId, resolved, cancellationToken);
+        var enterprise = await _executiveAggregationService.BuildEnterpriseAsync(companyId, resolved, cancellationToken);
+        var portfolios = await _executiveAggregationService.BuildPortfoliosAsync(companyId, resolved, cancellationToken);
+        var recommendations = await _executiveAggregationService.BuildRecommendationsAsync(companyId, resolved, cancellationToken);
+        var decisions = await _executiveAggregationService.BuildDecisionsAsync(companyId, resolved, cancellationToken);
+        var capacity = await _executiveAggregationService.BuildCapacityAsync(companyId, resolved, cancellationToken);
+        var workload = await _executiveAggregationService.BuildWorkloadAsync(companyId, resolved, cancellationToken);
+        var ai = await _executiveAggregationService.BuildAiAsync(companyId, resolved, cancellationToken);
+        var audit = await _executiveAggregationService.BuildAuditAsync(companyId, resolved, cancellationToken);
         var navigation = _executiveNavigationService.GetNavigation(companyId);
 
         return new ExecutiveWorkspaceResponse
@@ -78,14 +65,14 @@ public class ExecutiveWorkspaceService : IExecutiveWorkspaceService
             PeriodEnd = resolved.PeriodEnd,
             Kpis = overview.Kpis,
             Overview = overview,
-            Enterprise = enterpriseTask.Result,
-            Portfolios = portfoliosTask.Result,
-            Recommendations = recommendationsTask.Result,
-            Decisions = decisionsTask.Result,
-            Capacity = capacityTask.Result,
-            Workload = workloadTask.Result,
-            Ai = aiTask.Result,
-            Audit = auditTask.Result,
+            Enterprise = enterprise,
+            Portfolios = portfolios,
+            Recommendations = recommendations,
+            Decisions = decisions,
+            Capacity = capacity,
+            Workload = workload,
+            Ai = ai,
+            Audit = audit,
             Navigation = navigation
         };
     }
@@ -193,7 +180,7 @@ public class ExecutiveWorkspaceService : IExecutiveWorkspaceService
         var to = parameters.To ?? DateTimeOffset.UtcNow;
         var from = parameters.From ?? to.AddDays(-DefaultWindowDays);
 
-        var periodEnd = parameters.PeriodEnd ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var periodEnd = parameters.PeriodEnd ?? DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var periodStart = parameters.PeriodStart ?? periodEnd.AddDays(-DefaultWindowDays);
 
         return new ExecutiveWorkspaceQueryParameters

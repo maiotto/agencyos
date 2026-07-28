@@ -265,15 +265,10 @@ public class AuditService : IAuditService, IAuditQueryService
                 auditEvent.EntityId);
         }
 
-        // Decision workspace attention for decision lifecycle (also surfaces under Decision category).
-        // Remaining audited entities surface in the Audit category.
-        return (
-            $"Audit: {auditEvent.EntityType}",
-            $"Audit event '{auditEvent.Action}' ({auditEvent.EventType}) was recorded.",
-            NotificationCategory.Audit,
-            NotificationPriority.Low,
-            NotificationSourceEntities.AuditEvent,
-            auditEvent.Id);
+        // US-506 / DEC-506-001: notify only for the mapped business entity types above
+        // (plus direct Portfolio-create / Company-context hooks). Do not notify for
+        // usage audits, advisory simulations, or other unmapped audit entities.
+        return null;
     }
 
     private static AuditEventResponse MapToResponse(AuditEvent audit) =>

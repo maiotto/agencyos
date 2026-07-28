@@ -64,47 +64,35 @@ public class PlanningWorkspaceService : IPlanningWorkspaceService
         var companyId = await ResolveAndValidateCompanyIdAsync(parameters, cancellationToken);
         var resolved = ResolveWindow(parameters);
 
-        var overviewTask = _planningOverviewService.GetOverviewAsync(companyId, resolved, cancellationToken);
-        var templatesTask = BuildTemplatesSectionAsync(companyId, cancellationToken);
-        var capacityTask = BuildCapacitySectionAsync(
+        var overview = await _planningOverviewService.GetOverviewAsync(companyId, resolved, cancellationToken);
+        var templates = await BuildTemplatesSectionAsync(companyId, cancellationToken);
+        var capacity = await BuildCapacitySectionAsync(
             companyId,
             resolved.PeriodStart!.Value,
             resolved.PeriodEnd!.Value,
             cancellationToken);
-        var workloadTask = BuildWorkloadSectionAsync(
+        var workload = await BuildWorkloadSectionAsync(
             companyId,
             resolved.PeriodStart!.Value,
             resolved.PeriodEnd!.Value,
             cancellationToken);
-        var portfoliosTask = BuildPortfoliosSectionAsync(
+        var portfolios = await BuildPortfoliosSectionAsync(
             companyId,
             resolved.PeriodStart!.Value,
             resolved.PeriodEnd!.Value,
             cancellationToken);
-        var historyTask = _planningHistoryService.GetHistoryAsync(
+        var history = await _planningHistoryService.GetHistoryAsync(
             companyId,
             resolved.From,
             resolved.To,
             cancellationToken);
-        var scenariosTask = BuildScenariosSectionAsync(
+        var scenarios = await BuildScenariosSectionAsync(
             companyId,
             resolved.PeriodStart!.Value,
             resolved.PeriodEnd!.Value,
             resolved.From,
             resolved.To,
             cancellationToken);
-
-        await Task.WhenAll(
-            overviewTask,
-            templatesTask,
-            capacityTask,
-            workloadTask,
-            portfoliosTask,
-            historyTask,
-            scenariosTask);
-
-        var overview = overviewTask.Result;
-        var history = historyTask.Result;
         var navigation = _planningNavigationService.GetNavigation(companyId);
 
         var kpis = new PlanningKpiSummaryResponse
@@ -130,12 +118,12 @@ public class PlanningWorkspaceService : IPlanningWorkspaceService
             PeriodEnd = resolved.PeriodEnd,
             Kpis = kpis,
             Overview = overview,
-            Templates = templatesTask.Result,
-            Capacity = capacityTask.Result,
-            Workload = workloadTask.Result,
-            Portfolios = portfoliosTask.Result,
+            Templates = templates,
+            Capacity = capacity,
+            Workload = workload,
+            Portfolios = portfolios,
             History = history,
-            Scenarios = scenariosTask.Result,
+            Scenarios = scenarios,
             Navigation = navigation
         };
     }
@@ -277,12 +265,8 @@ public class PlanningWorkspaceService : IPlanningWorkspaceService
             PeriodEnd = periodEnd
         };
 
-        var aggregateTask = _capacityHistoryService.AggregateAsync(queryParameters, cancellationToken);
-        var recentTask = _capacityHistoryService.QueryAsync(queryParameters, cancellationToken);
-        await Task.WhenAll(aggregateTask, recentTask);
-
-        var aggregate = aggregateTask.Result;
-        var recent = recentTask.Result
+        var aggregate = await _capacityHistoryService.AggregateAsync(queryParameters, cancellationToken);
+        var recent = (await _capacityHistoryService.QueryAsync(queryParameters, cancellationToken))
             .OrderByDescending(history => history.CalculationDate)
             .Take(RecentHistoryLimit)
             .ToList();
@@ -324,12 +308,8 @@ public class PlanningWorkspaceService : IPlanningWorkspaceService
             PeriodEnd = periodEnd
         };
 
-        var aggregateTask = _workloadHistoryService.AggregateAsync(queryParameters, cancellationToken);
-        var recentTask = _workloadHistoryService.QueryAsync(queryParameters, cancellationToken);
-        await Task.WhenAll(aggregateTask, recentTask);
-
-        var aggregate = aggregateTask.Result;
-        var recent = recentTask.Result
+        var aggregate = await _workloadHistoryService.AggregateAsync(queryParameters, cancellationToken);
+        var recent = (await _workloadHistoryService.QueryAsync(queryParameters, cancellationToken))
             .OrderByDescending(history => history.CalculationDate)
             .Take(RecentHistoryLimit)
             .ToList();

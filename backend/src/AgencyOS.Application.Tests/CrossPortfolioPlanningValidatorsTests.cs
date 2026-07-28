@@ -27,7 +27,7 @@ public class CrossPortfolioPlanningQueryParametersValidatorTests
     [Fact]
     public void Validate_RejectsPeriodEndEarlierThanPeriodStart()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(
             new CrossPortfolioPlanningQueryParameters { PeriodStart = date, PeriodEnd = date.AddDays(-1) });
 
@@ -37,7 +37,7 @@ public class CrossPortfolioPlanningQueryParametersValidatorTests
     [Fact]
     public void Validate_AcceptsPeriodStartEqualToPeriodEnd()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(
             new CrossPortfolioPlanningQueryParameters { PeriodStart = date, PeriodEnd = date });
 
@@ -71,7 +71,7 @@ public class CrossPortfolioSelectionQueryParametersValidatorTests
     [Fact]
     public void Validate_RejectsPeriodEndEarlierThanPeriodStart()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(new CrossPortfolioSelectionQueryParameters
         {
             PortfolioIds = [Guid.NewGuid()],
@@ -124,7 +124,7 @@ public class SimulateCrossPortfolioPlanRequestValidatorTests
     [Fact]
     public void Validate_RejectsPeriodEndEarlierThanPeriodStart()
     {
-        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var date = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(new SimulateCrossPortfolioPlanRequest
         {
             PortfolioIds = [Guid.NewGuid(), Guid.NewGuid()],

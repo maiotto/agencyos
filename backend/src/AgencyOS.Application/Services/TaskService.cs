@@ -137,7 +137,7 @@ public class TaskService : ITaskService
         }
 
         task.TaskStatusId = completedStatus.Id;
-        task.ActualEnd ??= DateOnly.FromDateTime(DateTime.UtcNow);
+        task.ActualEnd ??= DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         task.UpdatedAt = DateTimeOffset.UtcNow;
 
         var updated = await _taskRepository.UpdateAsync(task, cancellationToken);

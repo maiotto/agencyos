@@ -46,32 +46,28 @@ public class DecisionWorkspaceService : IDecisionWorkspaceService
         var companyId = await ResolveAndValidateCompanyIdAsync(parameters, cancellationToken);
         var resolved = ResolveWindow(parameters);
 
-        var overviewTask = _decisionOverviewService.GetOverviewAsync(companyId, resolved, cancellationToken);
-        var decisionsTask = _decisionSummaryService.GetDecisionsSectionAsync(
+        var overview = await _decisionOverviewService.GetOverviewAsync(companyId, resolved, cancellationToken);
+        var decisions = await _decisionSummaryService.GetDecisionsSectionAsync(
             companyId,
             resolved.From,
             resolved.To,
             cancellationToken);
-        var timelineTask = _decisionSummaryService.GetTimelineSectionAsync(
+        var timeline = await _decisionSummaryService.GetTimelineSectionAsync(
             companyId,
             resolved.From,
             resolved.To,
             resolved.DecisionId,
             cancellationToken);
-        var outcomesTask = _decisionSummaryService.GetOutcomesSectionAsync(
+        var outcomes = await _decisionSummaryService.GetOutcomesSectionAsync(
             companyId,
             resolved.From,
             resolved.To,
             cancellationToken);
-        var auditTask = _decisionSummaryService.GetAuditSectionAsync(
+        var audit = await _decisionSummaryService.GetAuditSectionAsync(
             companyId,
             resolved.From,
             resolved.To,
             cancellationToken);
-
-        await Task.WhenAll(overviewTask, decisionsTask, timelineTask, outcomesTask, auditTask);
-
-        var overview = overviewTask.Result;
         var navigation = _decisionNavigationService.GetNavigation(companyId);
 
         return new DecisionWorkspaceResponse
@@ -83,10 +79,10 @@ public class DecisionWorkspaceService : IDecisionWorkspaceService
             DecisionId = resolved.DecisionId,
             Kpis = overview.Kpis,
             Overview = overview,
-            Decisions = decisionsTask.Result,
-            Timeline = timelineTask.Result,
-            Outcomes = outcomesTask.Result,
-            Audit = auditTask.Result,
+            Decisions = decisions,
+            Timeline = timeline,
+            Outcomes = outcomes,
+            Audit = audit,
             Navigation = navigation
         };
     }

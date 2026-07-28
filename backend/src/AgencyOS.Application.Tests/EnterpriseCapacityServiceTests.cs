@@ -52,7 +52,7 @@ public class EnterpriseCapacityServiceTests
     public async Task BuildAsync_UsesLiveCapacityEngine_WhenPeriodProvided()
     {
         var portfolios = new List<Portfolio> { CreatePortfolio(utilization: 50m) };
-        var periodStart = DateOnly.FromDateTime(DateTime.UtcNow);
+        var periodStart = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var periodEnd = periodStart.AddDays(30);
 
         var liveSummary = new CapacitySummaryResponse
@@ -81,8 +81,8 @@ public class EnterpriseCapacityServiceTests
             AgencyOSCompanies.DefaultCompanyId,
             $"Portfolio {Guid.NewGuid():N}",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             [(Guid.NewGuid(), 1)],
             DateTimeOffset.UtcNow);
@@ -116,8 +116,8 @@ public class EnterpriseCapacityServiceTests
             AgencyOSCompanies.DefaultCompanyId,
             $"Portfolio {Guid.NewGuid():N}",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             [(Guid.NewGuid(), 1)],
             DateTimeOffset.UtcNow);

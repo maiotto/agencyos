@@ -40,11 +40,11 @@ public class PlanningOverviewService : IPlanningOverviewService
         PlanningWorkspaceQueryParameters parameters,
         CancellationToken cancellationToken = default)
     {
-        var templatesTask = _planningTemplateService.GetAllAsync(
+        var templates = await _planningTemplateService.GetAllAsync(
             new PlanningTemplateQueryParameters { CompanyId = companyId },
             cancellationToken);
 
-        var portfoliosTask = _portfolioService.GetAllAsync(
+        var portfolios = await _portfolioService.GetAllAsync(
             new PortfolioQueryParameters
             {
                 CompanyId = companyId,
@@ -53,7 +53,7 @@ public class PlanningOverviewService : IPlanningOverviewService
             },
             cancellationToken);
 
-        var capacityTask = _capacityHistoryService.AggregateAsync(
+        var capacity = await _capacityHistoryService.AggregateAsync(
             new CapacityHistoryQueryParameters
             {
                 CompanyId = companyId,
@@ -62,7 +62,7 @@ public class PlanningOverviewService : IPlanningOverviewService
             },
             cancellationToken);
 
-        var workloadTask = _workloadHistoryService.AggregateAsync(
+        var workload = await _workloadHistoryService.AggregateAsync(
             new WorkloadHistoryQueryParameters
             {
                 CompanyId = companyId,
@@ -71,7 +71,7 @@ public class PlanningOverviewService : IPlanningOverviewService
             },
             cancellationToken);
 
-        var scenariosTask = _crossPortfolioPlanningService.GetScenariosAsync(
+        var scenarios = await _crossPortfolioPlanningService.GetScenariosAsync(
             new CrossPortfolioPlanningQueryParameters
             {
                 CompanyId = companyId,
@@ -81,14 +81,6 @@ public class PlanningOverviewService : IPlanningOverviewService
                 To = parameters.To
             },
             cancellationToken);
-
-        await Task.WhenAll(templatesTask, portfoliosTask, capacityTask, workloadTask, scenariosTask);
-
-        var templates = templatesTask.Result;
-        var portfolios = portfoliosTask.Result;
-        var capacity = capacityTask.Result;
-        var workload = workloadTask.Result;
-        var scenarios = scenariosTask.Result;
 
         var activeTemplateCount = templates.Count(template => PlanningTemplateStatus.IsActive(template.Status));
         var activePortfolioCount = portfolios.Count(portfolio =>

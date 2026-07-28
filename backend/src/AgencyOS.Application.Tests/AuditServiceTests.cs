@@ -14,11 +14,13 @@ public class AuditServiceTests
 {
     private readonly Mock<IAuditEventRepository> _repository = new();
 
-    private AuditService CreateService(IAuditContext? context = null) =>
+    private AuditService CreateService(
+        IAuditContext? context = null,
+        INotificationGenerationService? notificationGenerationService = null) =>
         new(
             _repository.Object,
             context ?? new NullAuditContext(),
-            new NoOpNotificationGenerationService(),
+            notificationGenerationService ?? new NoOpNotificationGenerationService(),
             NullLogger<AuditService>.Instance);
 
     [Fact]
@@ -101,5 +103,117 @@ public class AuditServiceTests
         });
 
         Assert.False(result.IsValid);
+    }
+
+    [Theory]
+    [InlineData(AuditEntityTypes.Decision, NotificationCategory.Decision, NotificationSourceEntities.Decision)]
+    [InlineData(AuditEntityTypes.RecommendationWorkflow, NotificationCategory.Recommendation, NotificationSourceEntities.RecommendationWorkflow)]
+    [InlineData(AuditEntityTypes.CapacityHistory, NotificationCategory.Capacity, NotificationSourceEntities.CapacityHistory)]
+    [InlineData(AuditEntityTypes.Portfolio, NotificationCategory.Portfolio, NotificationSourceEntities.Portfolio)]
+    [InlineData(AuditEntityTypes.PlanningTemplate, NotificationCategory.Planning, NotificationSourceEntities.PlanningWorkspace)]
+    [InlineData(AuditEntityTypes.ExecutiveRecommendationSummary, NotificationCategory.Executive, NotificationSourceEntities.ExecutiveWorkspace)]
+    [InlineData(AuditEntityTypes.Company, NotificationCategory.Company, NotificationSourceEntities.Company)]
+    [InlineData(AuditEntityTypes.Recommendation, NotificationCategory.Recommendation, NotificationSourceEntities.RecommendationWorkspace)]
+    public async Task RecordSafeAsync_GeneratesNotification_ForMappedEntityTypes(
+        string entityType,
+        string expectedCategory,
+        string expectedSourceEntity)
+    {
+        SetupSuccessfulAuditPersist();
+        var notifications = new Mock<INotificationGenerationService>();
+        NotificationGenerationRequest? generated = null;
+        notifications
+            .Setup(service => service.GenerateSafeAsync(
+                It.IsAny<NotificationGenerationRequest>(),
+                It.IsAny<CancellationToken>()))
+            .Callback<NotificationGenerationRequest, CancellationToken>((request, _) => generated = request)
+            .Returns(Task.CompletedTask);
+
+        var entityId = Guid.NewGuid();
+        await CreateService(notificationGenerationService: notifications.Object).RecordSafeAsync(
+            new AuditEventWriteRequest
+            {
+                EntityType = entityType,
+                EntityId = entityId,
+                EventType = AuditEventTypes.Created,
+                Action = $"{entityType}.Create",
+                UserId = "planner",
+                UserName = "planner",
+                CompanyId = AgencyOSCompanies.DefaultCompanyId
+            });
+
+        Assert.NotNull(generated);
+        Assert.Equal(expectedCategory, generated!.Category);
+        Assert.Equal(expectedSourceEntity, generated.SourceEntity);
+        Assert.Equal(entityId, generated.SourceEntityId);
+        notifications.Verify(
+            service => service.GenerateSafeAsync(
+                It.IsAny<NotificationGenerationRequest>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Theory]
+    [InlineData(AuditEntityTypes.Notification)]
+    [InlineData(AuditEntityTypes.PersonalProductivityDashboard)]
+    [InlineData(AuditEntityTypes.CrossPortfolioPlan)]
+    [InlineData(AuditEntityTypes.WorkloadHistory)]
+    [InlineData(AuditEntityTypes.AIRecommendation)]
+    [InlineData(AuditEntityTypes.Explainability)]
+    [InlineData(AuditEntityTypes.CompanyDecisionProfile)]
+    public async Task RecordSafeAsync_DoesNotGenerateNotification_ForUnmappedOrNotificationEntityTypes(
+        string entityType)
+    {
+        SetupSuccessfulAuditPersist();
+        var notifications = new Mock<INotificationGenerationService>();
+
+        await CreateService(notificationGenerationService: notifications.Object).RecordSafeAsync(
+            new AuditEventWriteRequest
+            {
+                EntityType = entityType,
+                EntityId = Guid.NewGuid(),
+                EventType = AuditEventTypes.Executed,
+                Action = $"{entityType}.Action",
+                UserId = "planner",
+                UserName = "planner",
+                CompanyId = AgencyOSCompanies.DefaultCompanyId
+            });
+
+        notifications.Verify(
+            service => service.GenerateSafeAsync(
+                It.IsAny<NotificationGenerationRequest>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task RecordSafeAsync_GeneratesNotification_ExactlyOnce_PerAuditEvent()
+    {
+        SetupSuccessfulAuditPersist();
+        var notifications = new Mock<INotificationGenerationService>();
+
+        await CreateService(notificationGenerationService: notifications.Object).RecordSafeAsync(
+            new AuditEventWriteRequest
+            {
+                EntityType = AuditEntityTypes.Decision,
+                EntityId = Guid.NewGuid(),
+                EventType = AuditEventTypes.StatusChanged,
+                Action = "Decision.Complete",
+                UserId = "planner",
+                UserName = "planner",
+                CompanyId = AgencyOSCompanies.DefaultCompanyId
+            });
+
+        notifications.Verify(
+            service => service.GenerateSafeAsync(
+                It.IsAny<NotificationGenerationRequest>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    private void SetupSuccessfulAuditPersist()
+    {
+        _repository.Setup(repository => repository.AddAsync(It.IsAny<AuditEvent>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((AuditEvent item, CancellationToken _) => item);
     }
 }

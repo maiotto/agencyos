@@ -1,4 +1,5 @@
 using AgencyOS.Application.Audit;
+using AgencyOS.Application.DTOs;
 using AgencyOS.Application.Interfaces;
 using AgencyOS.Application.Services;
 using AgencyOS.Domain.Entities;
@@ -12,11 +13,11 @@ public class CompanyContextServiceTests
     private readonly Mock<ICompanyRepository> _repository = new();
     private readonly CompanyContext _context = new();
 
-    private CompanyContextService CreateService() =>
+    private CompanyContextService CreateService(INotificationGenerationService? notifications = null) =>
         new(
             _repository.Object,
             _context,
-            new NoOpNotificationGenerationService(),
+            notifications ?? new NoOpNotificationGenerationService(),
             new NullAuditContext());
 
     [Fact]
@@ -57,6 +58,59 @@ public class CompanyContextServiceTests
         Assert.Equal(company.Id, _context.CompanyId);
         Assert.Equal(company.CompanyCode, _context.CompanyCode);
         Assert.Equal(company.CompanyName, _context.CompanyName);
+    }
+
+    [Fact]
+    public async Task BindContextAsync_PopulatesContextWhenActive_BR2003()
+    {
+        var company = CreateCompany();
+        _repository
+            .Setup(repository => repository.GetByIdAsync(company.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(company);
+
+        await CreateService().BindContextAsync(company.Id);
+
+        Assert.True(_context.IsSelected);
+        Assert.Equal(company.Id, _context.CompanyId);
+        Assert.Equal(company.CompanyCode, _context.CompanyCode);
+        Assert.Equal(company.CompanyName, _context.CompanyName);
+    }
+
+    [Fact]
+    public async Task BindContextAsync_DoesNotGenerateNotification()
+    {
+        var company = CreateCompany();
+        _repository
+            .Setup(repository => repository.GetByIdAsync(company.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(company);
+
+        var notifications = new Mock<INotificationGenerationService>();
+
+        await CreateService(notifications.Object).BindContextAsync(company.Id);
+
+        notifications.Verify(
+            service => service.GenerateSafeAsync(It.IsAny<NotificationGenerationRequest>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task SelectAsync_GeneratesNotification()
+    {
+        var company = CreateCompany();
+        _repository
+            .Setup(repository => repository.GetByIdAsync(company.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(company);
+
+        var notifications = new Mock<INotificationGenerationService>();
+        notifications
+            .Setup(service => service.GenerateSafeAsync(It.IsAny<NotificationGenerationRequest>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        await CreateService(notifications.Object).SelectAsync(company.Id);
+
+        notifications.Verify(
+            service => service.GenerateSafeAsync(It.IsAny<NotificationGenerationRequest>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]

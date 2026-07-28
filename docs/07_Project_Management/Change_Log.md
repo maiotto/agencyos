@@ -615,3 +615,40 @@ Future releases are expected to include:
 - User Experience Improvements
 
 Decision Intelligence remains part of the long-term roadmap and is not included in the v1.1 release.
+
+# v1.1.0 — Release 1.1
+
+Date
+
+2026-07
+
+Status
+
+Released
+
+---
+
+## Fixed
+
+- Resolved DbContext concurrency in dashboard and workspace aggregation.
+- Standardized UTC handling across the solution.
+- Removed unintended notification generation.
+- Validated complete startup sequence.
+- Successfully completed Guided Test Drive.
+
+---
+
+## Validation
+
+- Startup Checklist approved.
+- Guided Test Drive approved.
+- 1383 automated tests passed.
+- No blocking defects remain.
+
+---
+
+## Result
+
+Release 1.1 approved.
+
+AgencyOS Backend considered stable for future development.

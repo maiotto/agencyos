@@ -425,8 +425,8 @@ public class PortfolioAnalyticsServiceTests
             companyId ?? AgencyOSCompanies.DefaultCompanyId,
             $"Portfolio {Guid.NewGuid():N}",
             null,
-            DateOnly.FromDateTime(DateTime.UtcNow),
-            DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime),
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.AddDays(30).UtcDateTime),
             null,
             [(missionId, 1)],
             DateTimeOffset.UtcNow);

@@ -47,42 +47,31 @@ public class RecommendationWorkspaceService : IRecommendationWorkspaceService
         var companyId = await ResolveAndValidateCompanyIdAsync(parameters, cancellationToken);
         var resolved = ResolveWindow(parameters);
 
-        var overviewTask = _recommendationOverviewService.GetOverviewAsync(companyId, resolved, cancellationToken);
-        var recommendationsTask = _recommendationSummaryService.GetRecommendationsSectionAsync(
+        var overview = await _recommendationOverviewService.GetOverviewAsync(companyId, resolved, cancellationToken);
+        var recommendations = await _recommendationSummaryService.GetRecommendationsSectionAsync(
             companyId,
             cancellationToken);
-        var approvalTask = _recommendationSummaryService.GetApprovalSectionAsync(companyId, cancellationToken);
-        var historyTask = _recommendationSummaryService.GetHistorySectionAsync(
+        var approval = await _recommendationSummaryService.GetApprovalSectionAsync(companyId, cancellationToken);
+        var history = await _recommendationSummaryService.GetHistorySectionAsync(
             companyId,
             resolved.From,
             resolved.To,
             cancellationToken);
-        var compareTask = _recommendationSummaryService.GetCompareSectionAsync(
+        var compare = await _recommendationSummaryService.GetCompareSectionAsync(
             companyId,
             resolved.LeftRecommendationId,
             resolved.RightRecommendationId,
             cancellationToken);
-        var aiTask = _recommendationSummaryService.GetAiSectionAsync(
+        var ai = await _recommendationSummaryService.GetAiSectionAsync(
             companyId,
             resolved.From,
             resolved.To,
             cancellationToken);
-        var executiveSummaryTask = _recommendationSummaryService.GetExecutiveSummarySectionAsync(
+        var executiveSummary = await _recommendationSummaryService.GetExecutiveSummarySectionAsync(
             companyId,
             resolved.From,
             resolved.To,
             cancellationToken);
-
-        await Task.WhenAll(
-            overviewTask,
-            recommendationsTask,
-            approvalTask,
-            historyTask,
-            compareTask,
-            aiTask,
-            executiveSummaryTask);
-
-        var overview = overviewTask.Result;
         var navigation = _recommendationNavigationService.GetNavigation(companyId);
 
         return new RecommendationWorkspaceResponse
@@ -93,12 +82,12 @@ public class RecommendationWorkspaceService : IRecommendationWorkspaceService
             To = resolved.To,
             Kpis = overview.Kpis,
             Overview = overview,
-            Recommendations = recommendationsTask.Result,
-            Approval = approvalTask.Result,
-            History = historyTask.Result,
-            Compare = compareTask.Result,
-            Ai = aiTask.Result,
-            ExecutiveSummary = executiveSummaryTask.Result,
+            Recommendations = recommendations,
+            Approval = approval,
+            History = history,
+            Compare = compare,
+            Ai = ai,
+            ExecutiveSummary = executiveSummary,
             Navigation = navigation
         };
     }

@@ -346,7 +346,7 @@ public class CrossPortfolioPlanningService : ICrossPortfolioPlanningService
 
     private static (DateOnly Start, DateOnly End) ResolvePeriod(DateOnly? periodStart, DateOnly? periodEnd)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var start = periodStart ?? today;
         var end = periodEnd ?? start.AddDays(DefaultPeriodDays);
         return (start, end);

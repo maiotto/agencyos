@@ -76,7 +76,7 @@ public class WorkingHoursService : IWorkingHoursService
         CancellationToken cancellationToken = default)
     {
         var workingHours = await GetOrThrowAsync(id, cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         try
         {
@@ -159,7 +159,7 @@ public class WorkingHoursService : IWorkingHoursService
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var workingHours = await GetOrThrowAsync(id, cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         try
         {

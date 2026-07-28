@@ -57,7 +57,7 @@ public class WorkingCalendarsController : ControllerBase
         [FromQuery] DateOnly? date,
         CancellationToken cancellationToken)
     {
-        var asOfDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var asOfDate = date ?? DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var calendar = await _workingCalendarService.GetActiveForCompanyAsync(
             companyId,
             asOfDate,
@@ -82,7 +82,7 @@ public class WorkingCalendarsController : ControllerBase
         [FromQuery] DateOnly? date,
         CancellationToken cancellationToken)
     {
-        var asOfDate = date ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var asOfDate = date ?? DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = await _workingCalendarService.GetOperationalWorkingDayAsync(
             companyId,
             asOfDate,

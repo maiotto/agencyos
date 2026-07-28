@@ -114,6 +114,24 @@ Baseline Frozen
 
 Under Functional Validation
 
+Current Program Status
+
+Backend MVP
+
+Completed
+
+Release 1.1 Stabilization
+
+Completed
+
+Documentation
+
+Current
+
+Frontend
+
+In Development
+
 ---
 
 # Next Planned Milestone

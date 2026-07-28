@@ -40,26 +40,18 @@ public class EnterpriseDashboardService : IEnterpriseDashboardService
     {
         var companyId = await ResolveAndValidateCompanyIdAsync(parameters, cancellationToken);
 
-        var summaryTask = BuildSummaryAsync(companyId, parameters, cancellationToken);
-        var planningTask = _aggregationService.BuildPlanningAsync(companyId, parameters, cancellationToken);
-        var portfolioTask = _aggregationService.BuildPortfolioAsync(companyId, parameters, cancellationToken);
-        var capacityTask = BuildCapacityAsync(companyId, parameters, cancellationToken);
-        var workloadTask = BuildWorkloadAsync(companyId, parameters, cancellationToken);
-        var recommendationsTask = BuildRecommendationsAsync(companyId, parameters, cancellationToken);
-        var decisionsTask = BuildDecisionsAsync(companyId, parameters, cancellationToken);
-        var aiTask = BuildAiAsync(companyId, parameters, cancellationToken);
-        var auditTask = BuildAuditAsync(companyId, parameters, cancellationToken);
-
-        await Task.WhenAll(
-            summaryTask,
-            planningTask,
-            portfolioTask,
-            capacityTask,
-            workloadTask,
-            recommendationsTask,
-            decisionsTask,
-            aiTask,
-            auditTask);
+        // Sections must run sequentially: all aggregation paths share the same scoped
+        // DbContext via repositories, and EF Core does not allow concurrent operations
+        // on one context instance.
+        var summary = await BuildSummaryAsync(companyId, parameters, cancellationToken);
+        var planning = await _aggregationService.BuildPlanningAsync(companyId, parameters, cancellationToken);
+        var portfolio = await _aggregationService.BuildPortfolioAsync(companyId, parameters, cancellationToken);
+        var capacity = await BuildCapacityAsync(companyId, parameters, cancellationToken);
+        var workload = await BuildWorkloadAsync(companyId, parameters, cancellationToken);
+        var recommendations = await BuildRecommendationsAsync(companyId, parameters, cancellationToken);
+        var decisions = await BuildDecisionsAsync(companyId, parameters, cancellationToken);
+        var ai = await BuildAiAsync(companyId, parameters, cancellationToken);
+        var audit = await BuildAuditAsync(companyId, parameters, cancellationToken);
 
         var (from, to) = ResolveDateWindow(parameters);
         var (periodStart, periodEnd) = ResolvePeriodWindow(parameters);
@@ -72,15 +64,15 @@ public class EnterpriseDashboardService : IEnterpriseDashboardService
             To = to,
             PeriodStart = periodStart,
             PeriodEnd = periodEnd,
-            Summary = summaryTask.Result,
-            Planning = planningTask.Result,
-            Portfolio = portfolioTask.Result,
-            Capacity = capacityTask.Result,
-            Workload = workloadTask.Result,
-            Recommendations = recommendationsTask.Result,
-            Decisions = decisionsTask.Result,
-            Ai = aiTask.Result,
-            Audit = auditTask.Result
+            Summary = summary,
+            Planning = planning,
+            Portfolio = portfolio,
+            Capacity = capacity,
+            Workload = workload,
+            Recommendations = recommendations,
+            Decisions = decisions,
+            Ai = ai,
+            Audit = audit
         };
     }
 
@@ -347,7 +339,7 @@ public class EnterpriseDashboardService : IEnterpriseDashboardService
     private static (DateOnly PeriodStart, DateOnly PeriodEnd) ResolvePeriodWindow(
         EnterpriseDashboardQueryParameters parameters)
     {
-        var periodEnd = parameters.PeriodEnd ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var periodEnd = parameters.PeriodEnd ?? DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var periodStart = parameters.PeriodStart ?? periodEnd.AddDays(-DefaultWindowDays);
         return (periodStart, periodEnd);
     }

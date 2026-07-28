@@ -90,7 +90,7 @@ public class WorkingCalendarService : IWorkingCalendarService
         CancellationToken cancellationToken = default)
     {
         var calendar = await GetCalendarOrThrowAsync(id, cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         try
         {
@@ -173,7 +173,7 @@ public class WorkingCalendarService : IWorkingCalendarService
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var calendar = await GetCalendarOrThrowAsync(id, cancellationToken);
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
 
         try
         {

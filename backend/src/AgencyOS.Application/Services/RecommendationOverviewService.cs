@@ -40,16 +40,16 @@ public class RecommendationOverviewService : IRecommendationOverviewService
         RecommendationWorkspaceQueryParameters parameters,
         CancellationToken cancellationToken = default)
     {
-        var recommendationsTask = _recommendationService.GetByCompanyIdAsync(
+        var recommendations = await _recommendationService.GetByCompanyIdAsync(
             companyId,
             new RecommendationQueryParameters { CompanyId = companyId, IncludeArchived = true },
             cancellationToken);
 
-        var workflowsTask = _recommendationWorkflowService.GetAllAsync(
+        var workflows = await _recommendationWorkflowService.GetAllAsync(
             new RecommendationWorkflowQueryParameters { Status = RecommendationWorkflowStatus.PendingApproval },
             cancellationToken);
 
-        var aiTask = _aiRecommendationService.GetAllAsync(
+        var ai = await _aiRecommendationService.GetAllAsync(
             new AIRecommendationQueryParameters
             {
                 CompanyId = companyId,
@@ -58,7 +58,7 @@ public class RecommendationOverviewService : IRecommendationOverviewService
             },
             cancellationToken);
 
-        var explainabilityTask = _explainabilityService.GetAllAsync(
+        var explainability = await _explainabilityService.GetAllAsync(
             new ExplainabilityQueryParameters
             {
                 CompanyId = companyId,
@@ -67,7 +67,7 @@ public class RecommendationOverviewService : IRecommendationOverviewService
             },
             cancellationToken);
 
-        var executiveSummaryTask = _executiveRecommendationSummaryService.GetAllAsync(
+        var executiveSummary = await _executiveRecommendationSummaryService.GetAllAsync(
             new ExecutiveRecommendationSummaryQueryParameters
             {
                 CompanyId = companyId,
@@ -76,7 +76,7 @@ public class RecommendationOverviewService : IRecommendationOverviewService
             },
             cancellationToken);
 
-        var historyTask = _recommendationHistoryService.GetAllAsync(
+        var history = await _recommendationHistoryService.GetAllAsync(
             new RecommendationHistoryQueryParameters
             {
                 CompanyId = companyId,
@@ -85,20 +85,11 @@ public class RecommendationOverviewService : IRecommendationOverviewService
             },
             cancellationToken);
 
-        await Task.WhenAll(
-            recommendationsTask,
-            workflowsTask,
-            aiTask,
-            explainabilityTask,
-            executiveSummaryTask,
-            historyTask);
-
-        var recommendations = recommendationsTask.Result;
         var companyRecommendationIds = recommendations
             .Select(recommendation => recommendation.Id)
             .ToHashSet();
 
-        var pendingApprovalCount = workflowsTask.Result.Count(workflow =>
+        var pendingApprovalCount = workflows.Count(workflow =>
             workflow.CompanyId == companyId
             || (workflow.CompanyId is null && companyRecommendationIds.Contains(workflow.RecommendationId)));
 
@@ -113,10 +104,10 @@ public class RecommendationOverviewService : IRecommendationOverviewService
                 ActiveRecommendationCount = recommendations.Count(recommendation => !recommendation.Archived),
                 ArchivedRecommendationCount = recommendations.Count(recommendation => recommendation.Archived),
                 PendingApprovalCount = pendingApprovalCount,
-                AiRecommendationCount = aiTask.Result.Count,
-                ExplainabilityCount = explainabilityTask.Result.Count,
-                ExecutiveSummaryCount = executiveSummaryTask.Result.Count,
-                HistoryEventCount = historyTask.Result.Count
+                AiRecommendationCount = ai.Count,
+                ExplainabilityCount = explainability.Count,
+                ExecutiveSummaryCount = executiveSummary.Count,
+                HistoryEventCount = history.Count
             }
         };
     }

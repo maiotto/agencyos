@@ -29,6 +29,28 @@ public class CompanyContextService : ICompanyContextService
 
     public async Task SelectAsync(Guid companyId, CancellationToken cancellationToken = default)
     {
+        var company = await BindCompanyCoreAsync(companyId, cancellationToken);
+
+        await _notificationGenerationService.GenerateSafeAsync(
+            new NotificationGenerationRequest
+            {
+                CompanyId = company.Id,
+                UserId = string.IsNullOrWhiteSpace(_auditContext.UserId) ? "system" : _auditContext.UserId,
+                Title = "Company context selected",
+                Message = $"Active company set to '{company.CompanyName}'.",
+                Category = NotificationCategory.Company,
+                Priority = NotificationPriority.Low,
+                SourceEntity = NotificationSourceEntities.CompanyContext,
+                SourceEntityId = company.Id
+            },
+            cancellationToken);
+    }
+
+    public Task BindContextAsync(Guid companyId, CancellationToken cancellationToken = default) =>
+        BindCompanyCoreAsync(companyId, cancellationToken);
+
+    private async Task<Company> BindCompanyCoreAsync(Guid companyId, CancellationToken cancellationToken)
+    {
         var company = await _repository.GetByIdAsync(companyId, cancellationToken);
         if (company is null)
         {
@@ -49,19 +71,7 @@ public class CompanyContextService : ICompanyContextService
         _context.CompanyName = company.CompanyName;
         _context.IsSelected = true;
 
-        await _notificationGenerationService.GenerateSafeAsync(
-            new NotificationGenerationRequest
-            {
-                CompanyId = company.Id,
-                UserId = string.IsNullOrWhiteSpace(_auditContext.UserId) ? "system" : _auditContext.UserId,
-                Title = "Company context selected",
-                Message = $"Active company set to '{company.CompanyName}'.",
-                Category = NotificationCategory.Company,
-                Priority = NotificationPriority.Low,
-                SourceEntity = NotificationSourceEntities.CompanyContext,
-                SourceEntityId = company.Id
-            },
-            cancellationToken);
+        return company;
     }
 
     public async Task<CompanyResponse> GetActiveAsync(CancellationToken cancellationToken = default)

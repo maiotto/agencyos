@@ -45,7 +45,7 @@ public class ExecutiveWorkspaceQueryParametersValidatorTests
     [Fact]
     public void Validate_Fails_WhenPeriodEndBeforePeriodStart()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(new ExecutiveWorkspaceQueryParameters
         {
             PeriodStart = today,
@@ -57,7 +57,7 @@ public class ExecutiveWorkspaceQueryParametersValidatorTests
     [Fact]
     public void Validate_Succeeds_WhenPeriodStartEqualsPeriodEnd()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(new ExecutiveWorkspaceQueryParameters { PeriodStart = today, PeriodEnd = today });
         Assert.True(result.IsValid);
     }
@@ -65,7 +65,7 @@ public class ExecutiveWorkspaceQueryParametersValidatorTests
     [Fact]
     public void Validate_Succeeds_WhenPeriodEndAfterPeriodStart()
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var today = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime);
         var result = _validator.Validate(new ExecutiveWorkspaceQueryParameters
         {
             PeriodStart = today.AddDays(-10),
